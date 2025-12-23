@@ -9,5 +9,8 @@ import { NgxNgxTiptapEditor } from 'ngx-tiptap-editor';
   styleUrl: './app.css'
 })
 export class App {
+  onContentChange($event: string) {
+    console.log('Content changed:', $event);
+  }
   protected readonly title = signal('my-workspace');
 }
