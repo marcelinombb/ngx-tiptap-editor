@@ -7,6 +7,11 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
+    "paths": {
+      "ngx-tiptap-editor": [
+        "./dist/ngx-tiptap-editor"
+      ]
+    },
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
@@ -29,6 +34,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ngx-tiptap-editor/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ngx-tiptap-editor/tsconfig.spec.json"
     }
   ]
 }
