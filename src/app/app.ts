@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NgxNgxTiptapEditor } from 'ngx-tiptap-editor';
+import { NgxTiptapEditor } from 'ngx-tiptap-editor';
+
 
 @Component({
   selector: 'app-root',
-  imports: [NgxNgxTiptapEditor],
+  imports: [NgxTiptapEditor],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
