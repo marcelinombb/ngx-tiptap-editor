@@ -13,6 +13,8 @@ import { KatexFloatingMenuComponent } from './extensions/katex/katex-floating-me
 import { ImageFloatingMenuComponent } from './extensions/image/image-floating-menu.component';
 import { Figure } from './extensions/image/Figure';
 import { Figcaption } from './extensions/image/Figcaption';
+import { ColarQuestao } from './extensions/colar-questao';
+import { MathType, MathTypePlugin } from './extensions/mathtype';
 
 @Component({
   selector: 'tiptap-editor',
@@ -32,7 +34,7 @@ import { Figcaption } from './extensions/image/Figcaption';
   styleUrls: ['./tiptap-editor.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class NgxTiptapEditor implements OnDestroy{
+export class NgxTiptapEditor implements OnDestroy {
 
   private editorElement = viewChild.required<ElementRef>('editor');
   private editor = signal<Editor | null>(null);
@@ -85,6 +87,9 @@ export class NgxTiptapEditor implements OnDestroy{
         }),
         Figcaption,
         Figure,
+        ColarQuestao,
+        MathType,
+        MathTypePlugin
       ],
       content: this.content(),
       onUpdate: ({ editor }) => {
@@ -102,7 +107,7 @@ export class NgxTiptapEditor implements OnDestroy{
     this.editor.set(newEditor);
   }
 
-   ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.editor()?.destroy();
   }
 
