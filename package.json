@@ -12,7 +12,7 @@
     "build:pages": "ng build --configuration production --base-href /ngx-tiptap-editor/",
     "watch:lib": "npm run prebuild:lib && ng build ngx-tiptap-editor --watch",
     "setup:link": "npm run build:lib && cd dist/ngx-tiptap-editor && npm link && cd ../.. && npm link ngx-tiptap-editor",
-    "dev": "npm run setup:link && concurrently \"npm run watch:lib\" \"wait-on dist/ngx-tiptap-editor/index.d.ts && npm run start\"",
+    "dev": "concurrently \"npm run watch:lib\" \"wait-on dist/ngx-tiptap-editor/index.d.ts && npm run start\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

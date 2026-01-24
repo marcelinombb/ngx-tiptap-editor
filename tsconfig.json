@@ -9,7 +9,7 @@
     "noImplicitReturns": true,
     "paths": {
       "ngx-tiptap-editor": [
-        "./node_modules/ngx-tiptap-editor"
+        "./dist/ngx-tiptap-editor"
       ]
     },
     "noFallthroughCasesInSwitch": true,
