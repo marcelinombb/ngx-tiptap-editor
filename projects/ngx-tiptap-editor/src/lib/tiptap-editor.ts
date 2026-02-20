@@ -23,6 +23,7 @@ import { AnswerBox } from './extensions/answer-box/answer-box';
 import { SpellCheckerExtension } from './extensions/spell-checker';
 import { Paragraph } from '@tiptap/extension-paragraph';
 
+import { KatexMenuService } from './services/katex-menu.service';
 import { SpellCheckerConfig } from './extensions/spell-checker/spell-checker';
 
 export interface EditorExtensionsConfig {
@@ -49,7 +50,7 @@ export interface EditorExtensionsConfig {
   `,
   styleUrls: ['./tiptap-editor.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [EditorDropdownService]
+  providers: [EditorDropdownService, KatexMenuService]
 })
 export class NgxTiptapEditor implements OnDestroy {
   private editorElement = viewChild.required<ElementRef>('editor');
