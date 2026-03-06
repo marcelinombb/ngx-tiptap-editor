@@ -1,13 +1,17 @@
 <div class="split-container">
-    <div class="editor-column">
-        <tiptap-editor [content]="defaultText" [extensionsConfig]="extensionsConfig"
-            (onContentChange)="onContentChange($event)" (onEditorReady)="onEditorReady($event)"></tiptap-editor>
+  <div class="editor-column">
+    <tiptap-editor
+      [content]="defaultText"
+      [extensionsConfig]="extensionsConfig"
+      (onContentChange)="onContentChange($event)"
+      (onEditorReady)="onEditorReady($event)"
+    ></tiptap-editor>
+  </div>
+  <div class="preview-column">
+    <div class="tiptap-editor">
+      <div class="preview-paper">
+        <div class="tiptap ProseMirror" [innerHTML]="htmlContent()"></div>
+      </div>
     </div>
-    <div class="preview-column">
-        <div class="tiptap-editor">
-            <div class="preview-paper">
-                <div class="tiptap ProseMirror" [innerHTML]="htmlContent()"></div>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>

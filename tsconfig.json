@@ -8,9 +8,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "paths": {
-      "ngx-tiptap-editor": [
-        "./dist/ngx-tiptap-editor"
-      ]
+      "ngx-tiptap-editor": ["./dist/ngx-tiptap-editor"]
     },
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
