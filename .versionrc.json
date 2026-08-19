@@ -1,0 +1,15 @@
+{
+  "packageFiles": [
+    {
+      "filename": "projects/ngx-tiptap-editor/package.json",
+      "type": "json"
+    }
+  ],
+  "bumpFiles": [
+    {
+      "filename": "projects/ngx-tiptap-editor/package.json",
+      "type": "json"
+    }
+  ],
+  "infile": "projects/ngx-tiptap-editor/docs/CHANGELOG.md"
+}
