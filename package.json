@@ -8,7 +8,7 @@
     "build": "ng build",
     "build:lib": "ng build ngx-tiptap-editor",
     "prebuild:lib": "mkdir -p projects/ngx-tiptap-editor/assets/telemeter-wasm && cp node_modules/@wiris/mathtype-html-integration-devkit/telemeter-wasm/* projects/ngx-tiptap-editor/assets/telemeter-wasm/",
-    "postbuild:lib": "rm -rf projects/ngx-tiptap-editor/assets && sass projects/ngx-tiptap-editor/src/lib/preview.scss dist/ngx-tiptap-editor/preview.css",
+    "postbuild:lib": "rm -rf projects/ngx-tiptap-editor/assets && sass projects/ngx-tiptap-editor/src/lib/preview.scss dist/ngx-tiptap-editor/preview.css && node -e \"const p='dist/ngx-tiptap-editor/package.json'; const pkg=JSON.parse(require('fs').readFileSync(p)); pkg.exports['./preview.css']={default:'./preview.css'}; pkg.style='preview.css'; require('fs').writeFileSync(p, JSON.stringify(pkg, null, 2));\"",
     "build:pages": "ng build --configuration production --base-href /ngx-tiptap-editor/",
     "watch:lib": "npm run prebuild:lib && ng build ngx-tiptap-editor --watch",
     "setup:link": "npm run build:lib && cd dist/ngx-tiptap-editor && npm link && cd ../.. && npm link ngx-tiptap-editor",
