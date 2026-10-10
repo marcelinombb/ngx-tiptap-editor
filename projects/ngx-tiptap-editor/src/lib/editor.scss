@@ -14,8 +14,8 @@
   --editor-scroll-height: calc(201px + (2 * calc(2 * calc(0.6em * 1.5))));
   --editor-width: 24.8cm;
 
-  --ex-focus-ring: 1px solid var(--active-blue);
-  --ex-inner-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1) inset;
+  --tiptap-focus-ring: 1px solid var(--active-blue);
+  --tiptap-inner-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1) inset;
 
   --widget-outline-width: 3px;
   --widget-risize-box-translate-left: calc(-50% - var(--widget-outline-width)/2);
@@ -35,9 +35,9 @@
 
   .ProseMirror:focus {
     outline: none;
-    border: var(--ex-focus-ring);
+    border: var(--tiptap-focus-ring);
     box-shadow:
-      var(--ex-inner-shadow),
+      var(--tiptap-inner-shadow),
       0 0;
   }
 
