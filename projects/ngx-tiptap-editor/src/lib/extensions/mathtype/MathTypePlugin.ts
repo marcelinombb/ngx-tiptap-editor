@@ -136,6 +136,8 @@ export const MathTypePlugin = Extension.create<MathTypeOptions>({
               const pluginState = MathTypePluginKey.getState(view.state);
               if (pluginState && pluginState.integration) {
                 pluginState.integration.doubleClickHandler(event.target as HTMLElement, event);
+                // Formula double-clicks are fully handled by MathType; skip ProseMirror defaults.
+                return (event.target as HTMLElement)?.classList?.contains('Wirisformula') ?? false;
               }
               return false;
             },
@@ -168,6 +170,8 @@ class MathTypeIntegrationManager {
         return;
       }
 
+      if (!this.editor.isEditable) return;
+
       if (editorType == null) {
         integration.core.getCustomEditors().disable();
       } else {
@@ -176,31 +180,14 @@ class MathTypeIntegrationManager {
 
       integration.core.editionProperties.dbclick = false;
 
-      // Check for selected formula in Tiptap
-      const { state, view } = this.editor;
-      const { selection } = state;
-      let image = null;
+      const image = this.getSelectedFormulaImage();
 
-      if (selection.isNodeSelection) {
-        const node = selection.node;
-        if (node.type.name === 'mathtype') {
-          // We need the DOM element for the integration
-          const domNode = view.nodeDOM(selection.from);
-          if (domNode) {
-            // The nodeDOM might be the wrapper span. We need the img.
-            image = (domNode as HTMLElement).querySelector('img.Wirisformula') || domNode;
-          }
+      if (image) {
+        // A formula created with a custom editor (e.g. ChemType) must be reopened with it.
+        const customEditor = image.getAttribute(Configuration.get('imageCustomEditorName'));
+        if (customEditor) {
+          integration.core.getCustomEditors().enable(customEditor);
         }
-      }
-
-      // Also check if the cursor is near/on a formula in DOM (double click handling calls this implicitly sometimes?)
-      // But openEditor is manually called via button.
-      // If selection is text selection but perhaps wrapping the formula?
-
-      // In Wiris logic, 'temporalImage' being set triggers 'openExisting'.
-      // Simple approach: trust selection.
-
-      if (image && (image as HTMLElement).classList.contains('Wirisformula')) {
         integration.core.editionProperties.temporalImage = image;
         integration.openExistingFormulaEditor();
       } else {
@@ -209,6 +196,18 @@ class MathTypeIntegrationManager {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  /** Returns the <img> of the currently node-selected formula, if any. */
+  private getSelectedFormulaImage(): HTMLElement | null {
+    const { state, view } = this.editor;
+    const { selection } = state;
+
+    if (!selection.node || selection.node.type.name !== 'mathtype') return null;
+
+    const domNode = view.nodeDOM(selection.from) as HTMLElement | null;
+    const image = domNode?.querySelector?.('img.Wirisformula') ?? domNode;
+    return image?.classList?.contains('Wirisformula') ? image : null;
   }
 
   createMathTypeIntegration() {
@@ -262,6 +261,9 @@ class MathTypeIntegrationManager {
   }
 
   destroy(): void {
+    if (window.WirisPlugin?.currentInstance === this.integration) {
+      window.WirisPlugin.currentInstance = undefined;
+    }
     this.integration?.destroy();
     this.integration = undefined;
   }

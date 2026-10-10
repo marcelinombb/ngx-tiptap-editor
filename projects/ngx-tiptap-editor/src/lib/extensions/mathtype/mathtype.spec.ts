@@ -53,4 +53,32 @@ describe('MathType Extension', () => {
     expect(render[1]?.class).toBe('ex-mathype');
     expect(render[2]?.[0]).toBe('img');
   });
+
+  it('não deve interpretar imagens comuns como fórmula', () => {
+    const plain = new Editor({
+      extensions: [Document, Paragraph, Text, MathType],
+      content: '<p><img src="x.png" /></p>',
+    });
+    const found = plain.getJSON().content?.[0]?.content?.some((n) => n.type === 'mathtype');
+    expect(found).toBeFalsy();
+    plain.destroy();
+  });
+
+  it('deve atualizar a imagem do node view quando os atributos mudam', () => {
+    const nodeView = (MathType.config.addNodeView as any).call({})({
+      node: editor.state.doc.firstChild!.firstChild,
+    });
+    const img = nodeView.dom.querySelector('img') as HTMLImageElement;
+    expect(img.getAttribute('width')).toBe('100');
+
+    const updated = editor.state.doc.firstChild!.firstChild!.type.create({
+      class: 'Wirisformula',
+      width: '200',
+      'data-mathml': '<math></math>',
+    });
+    expect(nodeView.update(updated)).toBeTrue();
+    expect(img.getAttribute('width')).toBe('200');
+    expect(img.getAttribute('height')).toBe('');
+    expect(img.hasAttribute('data-custom-editor')).toBeFalse();
+  });
 });
