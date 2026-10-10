@@ -28,7 +28,7 @@ export interface EditorExtensionsConfig {
 }
 
 @Component({
-  selector: 'tiptap-editor',
+  selector: 'tiptap-editor, exitus-tiptap-editor, ngx-tiptap-editor',
   imports: [
     EditorToolbarComponent,
     KatexFloatingMenuComponent,
@@ -37,7 +37,7 @@ export interface EditorExtensionsConfig {
     AnswerBoxFloatingMenuComponent,
   ],
   template: `
-    <div class="tiptap-editor">
+    <div class="tiptap-editor exitus-tiptap-editor ngx-tiptap-editor">
       @if (editorInstance) {
         <editor-toolbar [editor]="editorInstance"></editor-toolbar>
         <katex-floating-menu [editor]="editorInstance"></katex-floating-menu>
@@ -106,3 +106,6 @@ export class NgxTiptapEditor implements OnDestroy, AfterViewInit {
     this.editor()?.destroy();
   }
 }
+
+/** Backward compatibility alias */
+export { NgxTiptapEditor as ExitusTiptapEditor };

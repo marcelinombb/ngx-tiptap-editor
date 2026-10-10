@@ -3,7 +3,9 @@
 @use './extensions/association/style.scss' as association-style;
 @use './extensions/alternatives/style.scss' as alternatives-style;
 
-.tiptap-editor {
+.tiptap-editor,
+.exitus-tiptap-editor,
+.ngx-tiptap-editor {
   --border-gray: #ccced1;
   --spacing-sm: calc(0.6em * 0.3);
   --spacing-md: calc(0.6em * 0.5);
@@ -16,6 +18,10 @@
 
   --tiptap-focus-ring: 1px solid var(--active-blue);
   --tiptap-inner-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1) inset;
+
+  /* Backward compatibility for legacy CSS variables */
+  --ex-focus-ring: var(--tiptap-focus-ring);
+  --ex-inner-shadow: var(--tiptap-inner-shadow);
 
   --widget-outline-width: 3px;
   --widget-risize-box-translate-left: calc(-50% - var(--widget-outline-width)/2);
@@ -35,9 +41,9 @@
 
   .ProseMirror:focus {
     outline: none;
-    border: var(--tiptap-focus-ring);
+    border: var(--tiptap-focus-ring, var(--ex-focus-ring));
     box-shadow:
-      var(--tiptap-inner-shadow),
+      var(--tiptap-inner-shadow, var(--ex-inner-shadow)),
       0 0;
   }
 

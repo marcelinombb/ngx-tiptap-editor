@@ -20,6 +20,16 @@
   --tiptap-font-size-large: 1.8em;
 
   --tiptap-line-height-base: 1.84615;
+
+  /* Backward compatibility for legacy --ex- variables */
+  --ex-font-face: var(--tiptap-font-face);
+  --ex-font-size-tiny: var(--tiptap-font-size-tiny);
+  --ex-font-size-small: var(--tiptap-font-size-small);
+  --ex-font-size-base: var(--tiptap-font-size-base);
+  --ex-font-size-normal: var(--tiptap-font-size-normal);
+  --ex-font-size-big: var(--tiptap-font-size-big);
+  --ex-font-size-large: var(--tiptap-font-size-large);
+  --ex-line-height-base: var(--tiptap-line-height-base);
 }
 
 .tiptap {

@@ -1,6 +1,8 @@
 @use '../../styles/insert-paragraph-btn' as *;
 
-.tiptap-editor {
+.tiptap-editor,
+.exitus-tiptap-editor,
+.ngx-tiptap-editor {
   .tiptap {
     table {
       border-collapse: collapse;

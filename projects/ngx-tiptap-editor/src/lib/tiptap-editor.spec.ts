@@ -31,4 +31,12 @@ describe('NgxTiptapEditor', () => {
     component.setContent(content);
     expect(component.editorInstance?.getHTML()).toContain('Hello World');
   });
+
+  it('should render compatibility CSS classes on editor element', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const editorDiv = el.querySelector('.tiptap-editor');
+    expect(editorDiv).toBeTruthy();
+    expect(editorDiv?.classList.contains('exitus-tiptap-editor')).toBeTrue();
+    expect(editorDiv?.classList.contains('ngx-tiptap-editor')).toBeTrue();
+  });
 });
