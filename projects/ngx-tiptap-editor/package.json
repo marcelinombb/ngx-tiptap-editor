@@ -22,6 +22,7 @@
   "peerDependencies": {
     "@angular/common": "^20.3.0",
     "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
     "@tiptap/core": "^3.20.0",
     "@tiptap/pm": "^3.20.0",
     "@tiptap/extension-bubble-menu": "^3.20.0",

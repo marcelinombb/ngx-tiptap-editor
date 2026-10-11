@@ -7,10 +7,13 @@ import {
   signal,
   viewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
   Injector,
   inject,
   AfterViewInit,
+  forwardRef,
 } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Editor } from '@tiptap/core';
 import { EditorToolbarComponent } from './components/editor-toolbar.component';
 import { KatexFloatingMenuComponent } from './components/floating-menus/katex-floating-menu.component';
@@ -52,9 +55,18 @@ export interface EditorExtensionsConfig {
   `,
   styleUrls: ['./tiptap-editor.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [EditorDropdownService, KatexMenuService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    EditorDropdownService,
+    KatexMenuService,
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NgxTiptapEditor),
+      multi: true,
+    },
+  ],
 })
-export class NgxTiptapEditor implements OnDestroy, AfterViewInit {
+export class NgxTiptapEditor implements ControlValueAccessor, OnDestroy, AfterViewInit {
   private editorElement = viewChild.required<ElementRef>('editor');
   private editor = signal<Editor | null>(null);
   private injector = inject(Injector);
@@ -66,9 +78,20 @@ export class NgxTiptapEditor implements OnDestroy, AfterViewInit {
   onContentChange = output<string>();
   onEditorReady = output<Editor>();
 
+  private onChange: (value: string) => void = () => {
+    // noop
+  };
+  private onTouched: () => void = () => {
+    // noop
+  };
+  private pendingValue: string | null = null;
+  private isDisabled = false;
+
   setContent(newContent: string) {
     if (this.editor()) {
       this.editor()!.commands.setContent(newContent);
+    } else {
+      this.pendingValue = newContent;
     }
   }
 
@@ -80,17 +103,53 @@ export class NgxTiptapEditor implements OnDestroy, AfterViewInit {
     this.initializeEditor();
   }
 
+  // --- ControlValueAccessor Implementation ---
+
+  writeValue(value: string | null): void {
+    const stringVal = value ?? '';
+    const currentEditor = this.editor();
+    if (currentEditor) {
+      if (currentEditor.getHTML() !== stringVal) {
+        currentEditor.commands.setContent(stringVal, { emitUpdate: false });
+      }
+    } else {
+      this.pendingValue = stringVal;
+    }
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled = isDisabled;
+    const currentEditor = this.editor();
+    if (currentEditor) {
+      currentEditor.setEditable(!isDisabled);
+    }
+  }
+
   private initializeEditor() {
+    const initialContent = this.pendingValue !== null ? this.pendingValue : this.content();
+
     const newEditor = new Editor({
       element: this.editorElement().nativeElement,
-      editable: this.editable(),
+      editable: this.isDisabled ? false : this.editable(),
+      content: initialContent,
       extensions: this.getExtensions(),
       onUpdate: ({ editor }) => {
         const html = editor.getHTML();
+        this.onChange(html);
         this.onContentChange.emit(html);
       },
+      onBlur: () => {
+        this.onTouched();
+      },
       onCreate: ({ editor }) => {
-        editor.commands.setContent(this.content());
         this.onEditorReady.emit(editor);
       },
     });

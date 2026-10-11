@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewEncapsulation,
+  signal,
+} from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 
 @Component({
@@ -14,16 +21,13 @@ import { AngularNodeViewComponent } from 'ngx-tiptap';
   standalone: true,
   imports: [],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlternativeItemComponent
   extends AngularNodeViewComponent
   implements OnInit, OnDestroy
 {
   markerText = signal<string>('');
-
-  constructor() {
-    super();
-  }
 
   ngOnInit() {
     this.markerText.set(this.node().attrs['data-marker'] || '');

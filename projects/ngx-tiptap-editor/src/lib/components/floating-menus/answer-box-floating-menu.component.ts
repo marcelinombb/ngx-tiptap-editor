@@ -1,4 +1,12 @@
-import { Component, input, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnInit,
+  OnDestroy,
+  signal,
+  inject,
+} from '@angular/core';
 import { FloatingMenuService } from '../../services/floating-menu.service';
 import { Editor } from '@tiptap/core';
 import { TiptapBubbleMenuDirective } from '../../directives/tiptap-bubble-menu.directive';
@@ -141,6 +149,7 @@ import { findNodeFromSelection } from '../../utils/tiptap-selection';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnswerBoxFloatingMenuComponent implements OnInit, OnDestroy {
   editor = input.required<Editor>();
@@ -153,18 +162,20 @@ export class AnswerBoxFloatingMenuComponent implements OnInit, OnDestroy {
 
   private floatingMenuService = inject(FloatingMenuService);
 
+  private onSync = () => this.syncState();
+
   ngOnInit() {
     this.floatingMenuService.registerMenu('answerBox');
-    this.editor().on('transaction', () => this.syncState());
-    this.editor().on('selectionUpdate', () => this.syncState());
-    this.editor().on('focus', () => this.syncState());
+    this.editor().on('transaction', this.onSync);
+    this.editor().on('selectionUpdate', this.onSync);
+    this.editor().on('focus', this.onSync);
     this.syncState();
   }
 
   ngOnDestroy() {
-    this.editor().off('transaction', this.syncState);
-    this.editor().off('selectionUpdate', this.syncState);
-    this.editor().off('focus', this.syncState);
+    this.editor().off('transaction', this.onSync);
+    this.editor().off('selectionUpdate', this.onSync);
+    this.editor().off('focus', this.onSync);
   }
 
   private syncState() {

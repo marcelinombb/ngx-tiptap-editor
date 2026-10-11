@@ -1,4 +1,13 @@
-import { Component, input, OnInit, signal, viewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnInit,
+  OnDestroy,
+  signal,
+  viewChild,
+  inject,
+} from '@angular/core';
 import { FloatingMenuService } from '../../services/floating-menu.service';
 import { EditorButtonComponent } from '../editor-button.component';
 import { EditorDropdownComponent } from '../editor-dropdown.component';
@@ -27,8 +36,8 @@ import { findFigureNode } from '../../utils/tiptap-selection';
           (onClick)="toggleCaption()"
         ></editor-button>
         <editor-dropdown
-          #imagesize
-          [title]="'Tamanho da Imagem'"
+          #imagealign
+          [title]="'Alinhamento da Imagem'"
           [icon]="'image-middle'"
           orientation="horizontal"
         >
@@ -126,8 +135,9 @@ import { findFigureNode } from '../../utils/tiptap-selection';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ImageFloatingMenuComponent implements OnInit {
+export class ImageFloatingMenuComponent implements OnInit, OnDestroy {
   editor = input.required<Editor>();
 
   activeClasses = signal(new Set<string>());
@@ -136,12 +146,18 @@ export class ImageFloatingMenuComponent implements OnInit {
 
   private floatingMenuService = inject(FloatingMenuService);
 
+  private onTransaction = () => {
+    this.syncImageState();
+  };
+
   ngOnInit() {
     this.floatingMenuService.registerMenu('image');
     this.floatingMenuService.registerMenu('figure');
-    this.editor().on('transaction', () => {
-      this.syncImageState();
-    });
+    this.editor().on('transaction', this.onTransaction);
+  }
+
+  ngOnDestroy() {
+    this.editor().off('transaction', this.onTransaction);
   }
 
   private syncImageState() {
@@ -170,7 +186,7 @@ export class ImageFloatingMenuComponent implements OnInit {
   }
 
   onHide = () => {
-    this.imageSizeDropdown().open = false;
+    this.imageSizeDropdown().close();
   };
 
   onShow = () => {

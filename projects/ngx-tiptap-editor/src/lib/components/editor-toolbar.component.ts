@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { EditorButtonComponent } from './editor-button.component';
 import { EditorDropdownComponent } from './editor-dropdown.component';
 import { TableGridComponent } from './table-grid.component';
@@ -19,7 +27,12 @@ import { AnswerBoxConfigComponent } from './answer-box-config.component';
   ],
   selector: 'editor-toolbar',
   template: `
-    <div class="ex-toolbar-editor" [class.ex-disabled]="!editor().isEditable">
+    <div
+      class="ex-toolbar-editor"
+      role="toolbar"
+      aria-label="Barra de ferramentas do editor"
+      [class.ex-disabled]="!editor().isEditable"
+    >
       <div class="ex-toolbar-items">
         <editor-button
           [icon]="'bold'"
@@ -67,12 +80,12 @@ import { AnswerBoxConfigComponent } from './answer-box-config.component';
         <editor-dropdown icon="text-block" [title]="'Caixa de Resposta'" #answerBoxDropdown>
           <answer-box-config
             [editor]="editor()"
-            (onSelect)="answerBoxDropdown.open = false"
+            (onSelect)="answerBoxDropdown.close()"
           ></answer-box-config>
         </editor-dropdown>
         <editor-dropdown icon="table" [title]="'Tabela'" #tableDropdown>
           <table-grid
-            (onSelect)="insertTable($event.rows, $event.cols); tableDropdown.open = false"
+            (onSelect)="insertTable($event.rows, $event.cols); tableDropdown.close()"
           ></table-grid>
         </editor-dropdown>
         <editor-dropdown
@@ -82,7 +95,7 @@ import { AnswerBoxConfigComponent } from './answer-box-config.component';
         >
           <special-characters
             [editor]="editor()"
-            (onSelect)="specialCharsDropdown.open = false"
+            (onSelect)="specialCharsDropdown.close()"
           ></special-characters>
         </editor-dropdown>
         <editor-dropdown>
@@ -232,16 +245,25 @@ import { AnswerBoxConfigComponent } from './answer-box-config.component';
       margin-right: var(--spacing-sm);
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditorToolbarComponent implements OnInit {
+export class EditorToolbarComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private katexMenuService = inject(KatexMenuService);
 
   editor = input.required<Editor>();
 
+  private onSelectionUpdate = () => this.cdr.markForCheck();
+  private onTransaction = () => this.cdr.markForCheck();
+
   ngOnInit(): void {
-    this.editor().on('selectionUpdate', () => this.cdr.detectChanges());
-    this.editor().on('transaction', () => this.cdr.detectChanges());
+    this.editor().on('selectionUpdate', this.onSelectionUpdate);
+    this.editor().on('transaction', this.onTransaction);
+  }
+
+  ngOnDestroy(): void {
+    this.editor().off('selectionUpdate', this.onSelectionUpdate);
+    this.editor().off('transaction', this.onTransaction);
   }
 
   isActive(name: string | any, attrs?: any): boolean {

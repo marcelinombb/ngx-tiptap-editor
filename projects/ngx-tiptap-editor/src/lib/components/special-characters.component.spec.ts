@@ -37,36 +37,36 @@ describe('SpecialCharactersComponent', () => {
   });
 
   it('should initialize with default category and characters', () => {
-    expect(component.currentCategory).toBe('Letras Gregas');
-    expect(component.displayedChars.length).toBeGreaterThan(0);
-    expect(component.previewChar).toBe('Ω');
+    expect(component.currentCategory()).toBe('Letras Gregas');
+    expect(component.displayedChars().length).toBeGreaterThan(0);
+    expect(component.previewChar()).toBe('Ω');
   });
 
   it('should change category when selectCategory is called', () => {
     component.selectCategory('Setas');
-    expect(component.currentCategory).toBe('Setas');
-    expect(component.displayedChars.length).toBeGreaterThan(0);
-    expect(component.displayedChars.includes('←')).toBeTrue();
+    expect(component.currentCategory()).toBe('Setas');
+    expect(component.displayedChars().length).toBeGreaterThan(0);
+    expect(component.displayedChars().includes('←')).toBeTrue();
   });
 
   it('should filter characters when handleSearch is called', () => {
-    component.searchQuery = 'grega';
+    component.searchQuery.set('grega');
     component.handleSearch();
-    expect(component.displayedChars.length).toBeGreaterThan(0);
+    expect(component.displayedChars().length).toBeGreaterThan(0);
     expect(
-      component.displayedChars.includes('α') || component.displayedChars.includes('Α'),
+      component.displayedChars().includes('α') || component.displayedChars().includes('Α'),
     ).toBeTrue();
 
     // Reset search
-    component.searchQuery = '';
+    component.searchQuery.set('');
     component.handleSearch();
-    expect(component.displayedChars.length).toBeGreaterThan(0);
+    expect(component.displayedChars().length).toBeGreaterThan(0);
   });
 
   it('should update preview on updatePreview', () => {
     component.updatePreview('β');
-    expect(component.previewChar).toBe('β');
-    expect(component.previewName).toContain('grega');
+    expect(component.previewChar()).toBe('β');
+    expect(component.previewName()).toContain('grega');
   });
 
   it('should insert character into editor and emit onSelect', () => {

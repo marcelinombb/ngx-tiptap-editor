@@ -1,18 +1,18 @@
-import { Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
 
 @Component({
   selector: 'table-grid',
   standalone: true,
   template: `
     <div class="ex-table-grid-container">
-      <div class="ex-table-grid-header">{{ hoveredRows }} x {{ hoveredCols }}</div>
+      <div class="ex-table-grid-header">{{ hoveredRows() }} x {{ hoveredCols() }}</div>
       <div class="ex-table-grid" (mouseleave)="resetHover()">
         @for (row of rows; track row) {
           <div class="ex-table-grid-row">
             @for (col of cols; track col) {
               <div
                 class="ex-table-grid-cell"
-                [class.selected]="row <= hoveredRows && col <= hoveredCols"
+                [class.selected]="row <= hoveredRows() && col <= hoveredCols()"
                 (mouseenter)="onHover(row, col)"
                 (click)="selectGrid(row, col)"
               ></div>
@@ -62,24 +62,25 @@ import { Component, output } from '@angular/core';
       background-color: #cae1fc;
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableGridComponent {
   onSelect = output<{ rows: number; cols: number }>();
 
-  rows = Array.from({ length: 10 }, (_, i) => i + 1);
-  cols = Array.from({ length: 10 }, (_, i) => i + 1);
+  readonly rows = Array.from({ length: 10 }, (_, i) => i + 1);
+  readonly cols = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  hoveredRows = 0;
-  hoveredCols = 0;
+  hoveredRows = signal(0);
+  hoveredCols = signal(0);
 
   onHover(row: number, col: number) {
-    this.hoveredRows = row;
-    this.hoveredCols = col;
+    this.hoveredRows.set(row);
+    this.hoveredCols.set(col);
   }
 
   resetHover() {
-    this.hoveredRows = 0;
-    this.hoveredCols = 0;
+    this.hoveredRows.set(0);
+    this.hoveredCols.set(0);
   }
 
   selectGrid(rows: number, cols: number) {

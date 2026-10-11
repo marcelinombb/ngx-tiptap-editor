@@ -1,6 +1,6 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  ChangeDetectorRef,
   OnInit,
   OnDestroy,
   ViewEncapsulation,
@@ -21,16 +21,13 @@ import { AngularNodeViewComponent } from 'ngx-tiptap';
   standalone: true,
   imports: [],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssociationItemComponent
   extends AngularNodeViewComponent
   implements OnInit, OnDestroy
 {
   markerText = signal<string>('');
-
-  constructor() {
-    super();
-  }
 
   ngOnInit() {
     this.markerText.set(this.node().attrs['data-marker'] || '');

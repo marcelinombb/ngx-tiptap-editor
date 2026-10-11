@@ -1,4 +1,4 @@
-import { Component, computed, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 
 @Component({
@@ -27,6 +27,7 @@ import { AngularNodeViewComponent } from 'ngx-tiptap';
     `,
   ],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ColarQuestaoComponent extends AngularNodeViewComponent {
   title = computed(() => this.node().attrs['title']);

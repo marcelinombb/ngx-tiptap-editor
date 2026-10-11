@@ -3,6 +3,16 @@ const { defineConfig } = require("eslint/config");
 const rootConfig = require("../../eslint.config.js");
 
 module.exports = defineConfig([
+  {
+    ignores: [
+      "dist/**",
+      "**/dist/**",
+      "coverage/**",
+      "assets/**",
+      "**/assets/**",
+      "**/*.d.ts",
+    ],
+  },
   ...rootConfig,
   {
     files: ["**/*.ts"],

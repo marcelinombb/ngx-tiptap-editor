@@ -1,10 +1,11 @@
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Editor } from '@tiptap/core';
 
 @Component({
   selector: 'answer-box-config',
   imports: [FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="answer-box-config">
       <div class="config-header">
