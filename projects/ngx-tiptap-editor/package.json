@@ -34,9 +34,9 @@
     "@tiptap/extension-table-row": "^3.20.0",
     "@tiptap/extension-table-header": "^3.20.0",
     "@tiptap/extension-table-cell": "^3.20.0",
-    "@wiris/mathtype-html-integration-devkit": "^1.17.16",
+    "@wiris/mathtype-html-integration-devkit": "^1.17.17",
     "ngx-tiptap": "^14.0.1",
-    "katex": "^0.16.27"
+    "katex": "^0.16.27 || ^0.19.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
