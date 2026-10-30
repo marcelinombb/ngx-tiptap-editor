@@ -92,4 +92,75 @@ describe('Figure Extension', () => {
     figureInfo = findFigureNode(editor.state);
     expect(figureInfo?.node.childCount).toBe(1); // figcaption removida
   });
+
+  it('deve armazenar e aplicar metadados de crop com setCrop e resetCrop', () => {
+    editor.commands.setNodeSelection(0);
+
+    const cropRegion = { x: 0.1, y: 0.2, width: 0.5, height: 0.6 };
+    editor.commands.setCrop(cropRegion);
+
+    let figureInfo = findFigureNode(editor.state);
+    expect(figureInfo?.node.attrs['crop']).toEqual(cropRegion);
+
+    // Child image node também deve conter os metadados de crop
+    const imageChild = figureInfo?.node.firstChild;
+    expect(imageChild?.attrs['crop']).toEqual(cropRegion);
+    // Original src permanece inalterado
+    expect(imageChild?.attrs['src']).toBe('https://example.com/test.png');
+
+    editor.commands.resetCrop();
+
+    figureInfo = findFigureNode(editor.state);
+    expect(figureInfo?.node.attrs['crop']).toBeNull();
+    expect(figureInfo?.node.firstChild?.attrs['crop']).toBeNull();
+    expect(figureInfo?.node.firstChild?.attrs['src']).toBe('https://example.com/test.png');
+  });
+
+  it('deve carregar e serializar imagem com metadados de data-crop mantendo compatibilidade', () => {
+    const customEditor = new Editor({
+      extensions: [
+        StarterKit,
+        Image.configure({ inline: false, allowBase64: true }),
+        Figcaption,
+        Figure.configure({ injector }),
+      ],
+      content:
+        '<figure><img src="https://example.com/photo.jpg" data-crop=\'{"x":0.2,"y":0.3,"width":0.4,"height":0.5}\' /></figure>',
+    });
+
+    const figureInfo = findFigureNode(customEditor.state);
+    expect(figureInfo?.node.firstChild?.attrs['crop']).toEqual({
+      x: 0.2,
+      y: 0.3,
+      width: 0.4,
+      height: 0.5,
+    });
+    expect(figureInfo?.node.firstChild?.attrs['src']).toBe('https://example.com/photo.jpg');
+
+    const html = customEditor.getHTML();
+    expect(html).toContain('data-crop=');
+    expect(html).toContain('https://example.com/photo.jpg');
+    expect(html).toContain('object-view-box: inset(');
+
+    customEditor.destroy();
+  });
+
+  it('deve manter compatibilidade com imagens existentes sem metadados de crop', () => {
+    const standardEditor = new Editor({
+      extensions: [
+        StarterKit,
+        Image.configure({ inline: false, allowBase64: true }),
+        Figcaption,
+        Figure.configure({ injector }),
+      ],
+      content: '<figure><img src="https://example.com/uncropped.jpg" /></figure>',
+    });
+
+    const figureInfo = findFigureNode(standardEditor.state);
+    expect(figureInfo?.node.attrs['crop']).toBeNull();
+    expect(figureInfo?.node.firstChild?.attrs['crop']).toBeNull();
+    expect(figureInfo?.node.firstChild?.attrs['src']).toBe('https://example.com/uncropped.jpg');
+
+    standardEditor.destroy();
+  });
 });

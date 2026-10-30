@@ -8,16 +8,23 @@ export interface CropperButton {
 import {
   CropHandleDirection,
   CropRect,
+  CropRegion,
   DEFAULT_MIN_CROP_SIZE,
+  applyCropToElement,
+  computeCreateCropRect,
   computeDragCropRect,
+  denormalizeCropRegion,
+  isFullCrop,
+  normalizeCropRegion,
 } from './image-cropper-math';
-import { cropImageToDataUrl } from './image-cropper-canvas';
 
-interface CropTarget {
+export interface CropTarget {
   image: HTMLImageElement;
   imageWrapper: HTMLElement;
   figcaption?: HTMLElement | null;
   resizer?: { hide: () => void; show: () => void };
+  getCrop?: () => CropRegion | null;
+  onCropChange?: (region: CropRegion) => void;
   updateAttributes: (attrs: Record<string, any>) => void;
 }
 
@@ -29,6 +36,7 @@ export default class ImageCropper {
   private readonly cropArea: HTMLDivElement;
   private readonly actions: HTMLDivElement;
   private readonly applyButton: HTMLButtonElement;
+  private readonly resetButton: HTMLButtonElement;
   private readonly cancelButton: HTMLButtonElement;
   private toggleButton?: CropperButton;
 
@@ -37,6 +45,7 @@ export default class ImageCropper {
   private dragMode: CropHandleDirection | null = null;
   private startPointer: { x: number; y: number } = { x: 0, y: 0 };
   private startRect: CropRect = { x: 0, y: 0, width: 0, height: 0 };
+  private createStartPoint: { x: number; y: number } = { x: 0, y: 0 };
 
   private readonly onPointerMove: (event: PointerEvent) => void;
   private readonly onPointerUp: (event: PointerEvent) => void;
@@ -58,10 +67,11 @@ export default class ImageCropper {
     this.actions = document.createElement('div');
     this.actions.className = 'ex-crop-actions ex-hidden';
 
-    this.applyButton = this.createActionButton('Aplicar', 'ex-crop-apply');
     this.cancelButton = this.createActionButton('Cancelar', 'ex-crop-cancel');
+    this.resetButton = this.createActionButton('Redefinir', 'ex-crop-reset');
+    this.applyButton = this.createActionButton('Aplicar', 'ex-crop-apply');
 
-    this.actions.append(this.cancelButton, this.applyButton);
+    this.actions.append(this.cancelButton, this.resetButton, this.applyButton);
     this.target.imageWrapper.appendChild(this.actions);
 
     if (this.target.figcaption?.parentElement === this.target.imageWrapper) {
@@ -74,11 +84,17 @@ export default class ImageCropper {
     this.onPointerUp = this.handlePointerUp.bind(this);
     this.onKeyDown = this.handleKeyDown.bind(this);
 
+    this.overlay.addEventListener('pointerdown', (event) => this.handleOverlayPointerDown(event));
     this.cropArea.addEventListener('pointerdown', (event) => this.handlePointerDown(event));
+    this.resetButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.resetSelection();
+    });
     this.applyButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      void this.applyCrop();
+      this.applyCrop();
     });
     this.cancelButton.addEventListener('click', (event) => {
       event.preventDefault();
@@ -112,6 +128,9 @@ export default class ImageCropper {
     this.target.imageWrapper.classList.add('ex-image-cropping');
     this.toggleButton?.on();
 
+    // Temporarily clear crop simulation styles to show full original image for cropping
+    applyCropToElement(this.target.image, null);
+
     this.updateOverlayBounds();
     this.overlay.classList.remove('ex-hidden');
     this.overlay.style.display = 'block';
@@ -129,12 +148,17 @@ export default class ImageCropper {
       fallbackHeight ||
       MIN_CROP_SIZE;
 
-    this.cropRect = {
-      x: Math.max(0, width * 0.05),
-      y: Math.max(0, height * 0.05),
-      width: Math.max(MIN_CROP_SIZE, width * 0.9),
-      height: Math.max(MIN_CROP_SIZE, height * 0.9),
-    };
+    const existingCrop = this.getExistingCrop();
+    if (existingCrop && !isFullCrop(existingCrop)) {
+      this.cropRect = denormalizeCropRegion(existingCrop, width, height);
+    } else {
+      this.cropRect = {
+        x: Math.max(0, width * 0.05),
+        y: Math.max(0, height * 0.05),
+        width: Math.max(MIN_CROP_SIZE, width * 0.9),
+        height: Math.max(MIN_CROP_SIZE, height * 0.9),
+      };
+    }
 
     if (this.cropRect.width > width) {
       this.cropRect.width = width;
@@ -149,6 +173,7 @@ export default class ImageCropper {
     this.target.resizer?.hide();
 
     this.renderCropArea();
+    this.target.onCropChange?.(this.getNormalizedCropRegion());
 
     document.addEventListener('keydown', this.onKeyDown);
   }
@@ -169,12 +194,47 @@ export default class ImageCropper {
     this.actions.classList.add('ex-hidden');
     this.actions.style.display = 'none';
 
+    // Reapply existing crop styles to the image if any
+    const existingCrop = this.getExistingCrop();
+    applyCropToElement(this.target.image, existingCrop);
+
     if (this.target.imageWrapper.classList.contains('ex-selected')) {
       this.target.resizer?.show();
     } else {
       this.target.resizer?.hide();
     }
     this.toggleButton?.off();
+  }
+
+  private handleOverlayPointerDown(event: PointerEvent) {
+    if (!this.isCropping) return;
+
+    const target = event.target as HTMLElement;
+    if (this.cropArea.contains(target) || this.actions.contains(target)) {
+      return;
+    }
+
+    const overlayRect = this.overlay.getBoundingClientRect();
+    const startX = event.clientX - overlayRect.left;
+    const startY = event.clientY - overlayRect.top;
+
+    this.dragMode = 'create';
+    this.createStartPoint = { x: startX, y: startY };
+    this.cropRect = computeCreateCropRect(
+      this.createStartPoint,
+      this.createStartPoint,
+      this.overlay.clientWidth,
+      this.overlay.clientHeight,
+      MIN_CROP_SIZE,
+    );
+    this.renderCropArea();
+    this.target.onCropChange?.(this.getNormalizedCropRegion());
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    document.addEventListener('pointermove', this.onPointerMove);
+    document.addEventListener('pointerup', this.onPointerUp);
   }
 
   private handlePointerDown(event: PointerEvent) {
@@ -197,11 +257,29 @@ export default class ImageCropper {
   private handlePointerMove(event: PointerEvent) {
     if (!this.isCropping || !this.dragMode) return;
 
-    const dx = event.clientX - this.startPointer.x;
-    const dy = event.clientY - this.startPointer.y;
-
     const containerWidth = this.overlay.clientWidth || this.target.image.clientWidth;
     const containerHeight = this.overlay.clientHeight || this.target.image.clientHeight;
+
+    if (this.dragMode === 'create') {
+      const overlayRect = this.overlay.getBoundingClientRect();
+      const currentPoint = {
+        x: event.clientX - overlayRect.left,
+        y: event.clientY - overlayRect.top,
+      };
+      this.cropRect = computeCreateCropRect(
+        this.createStartPoint,
+        currentPoint,
+        containerWidth,
+        containerHeight,
+        MIN_CROP_SIZE,
+      );
+      this.renderCropArea();
+      this.target.onCropChange?.(this.getNormalizedCropRegion());
+      return;
+    }
+
+    const dx = event.clientX - this.startPointer.x;
+    const dy = event.clientY - this.startPointer.y;
 
     this.cropRect = computeDragCropRect(
       this.startRect,
@@ -213,6 +291,7 @@ export default class ImageCropper {
       MIN_CROP_SIZE,
     );
     this.renderCropArea();
+    this.target.onCropChange?.(this.getNormalizedCropRegion());
   }
 
   private handlePointerUp() {
@@ -279,38 +358,82 @@ export default class ImageCropper {
     this.overlay.style.top = `${top}px`;
   }
 
-  private async applyCrop() {
+  resetSelection() {
+    if (!this.isCropping) return;
+
+    const width =
+      this.overlay.clientWidth ||
+      this.target.image.clientWidth ||
+      this.target.image.naturalWidth ||
+      MIN_CROP_SIZE;
+    const height =
+      this.overlay.clientHeight ||
+      this.target.image.clientHeight ||
+      this.target.image.naturalHeight ||
+      MIN_CROP_SIZE;
+
+    this.cropRect = {
+      x: 0,
+      y: 0,
+      width,
+      height,
+    };
+    this.renderCropArea();
+    this.target.onCropChange?.(this.getNormalizedCropRegion());
+  }
+
+  getNormalizedCropRegion(): CropRegion {
+    const width =
+      this.overlay.clientWidth ||
+      this.target.image.clientWidth ||
+      this.target.image.naturalWidth ||
+      1;
+    const height =
+      this.overlay.clientHeight ||
+      this.target.image.clientHeight ||
+      this.target.image.naturalHeight ||
+      1;
+    return normalizeCropRegion(this.cropRect, width, height);
+  }
+
+  private getExistingCrop(): CropRegion | null {
+    if (typeof this.target.getCrop === 'function') {
+      const crop = this.target.getCrop();
+      if (crop) return crop;
+    }
+    const dataCrop = this.target.image.getAttribute('data-crop');
+    if (dataCrop) {
+      try {
+        return JSON.parse(dataCrop);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  private applyCrop() {
     if (!this.isCropping) return;
 
     try {
-      if (!this.target.image.complete) {
-        await new Promise<void>((resolve) => {
-          this.target.image.addEventListener('load', () => resolve(), { once: true });
-        });
-      }
+      const containerWidth =
+        this.overlay.clientWidth || this.target.image.clientWidth || this.target.image.naturalWidth;
+      const containerHeight =
+        this.overlay.clientHeight ||
+        this.target.image.clientHeight ||
+        this.target.image.naturalHeight;
 
-      const displayWidth = this.target.image.clientWidth || this.target.image.naturalWidth;
-      const displayHeight = this.target.image.clientHeight || this.target.image.naturalHeight;
+      const normalized = normalizeCropRegion(this.cropRect, containerWidth, containerHeight);
+      const finalCrop = isFullCrop(normalized) ? null : normalized;
 
-      const dataUrl = cropImageToDataUrl(
-        this.target.image,
-        this.cropRect,
-        displayWidth,
-        displayHeight,
-      );
-
-      const newWidth = Math.round(this.cropRect.width);
-
-      // Only update attributes, let the NodeView handle the visual update
+      // Update attributes without modifying or overwriting original image src
       this.target.updateAttributes({
-        src: dataUrl,
-        width: newWidth,
+        crop: finalCrop,
       });
+
+      applyCropToElement(this.target.image, finalCrop);
     } catch (error) {
       console.error('Erro ao recortar imagem:', error);
-      window.alert(
-        'Não foi possível recortar a imagem. Verifique se a imagem permite acesso (CORS) ou se o arquivo é válido.',
-      );
     } finally {
       this.disable();
     }

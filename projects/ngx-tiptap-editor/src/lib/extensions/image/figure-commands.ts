@@ -2,6 +2,7 @@ import { RawCommands } from '@tiptap/core';
 import { TextSelection } from 'prosemirror-state';
 import { ALIGN, hasFigureAlignment } from './figure-utils';
 import { findFigureNode } from '../../utils/tiptap-selection';
+import { CropRegion } from './image-cropper-math';
 
 export const createFigureCommands = (): Partial<RawCommands> => {
   return {
@@ -147,6 +148,43 @@ export const createFigureCommands = (): Partial<RawCommands> => {
         }
 
         return false;
+      };
+    },
+
+    setCrop: (crop: CropRegion | null) => {
+      return ({ tr, state, dispatch }) => {
+        const figureNode = findFigureNode(state);
+        if (!figureNode) return false;
+
+        const pos = figureNode.pos;
+        let newTr = tr;
+
+        figureNode.node.content.forEach((child, offset) => {
+          if (child.type.name === 'image') {
+            newTr = newTr.setNodeMarkup(pos + 1 + offset, undefined, {
+              ...child.attrs,
+              crop,
+            });
+          }
+        });
+
+        newTr = newTr.setNodeMarkup(pos, undefined, {
+          ...figureNode.node.attrs,
+          crop,
+        });
+
+        if (newTr.docChanged) {
+          dispatch && dispatch(newTr);
+          return true;
+        }
+
+        return false;
+      };
+    },
+
+    resetCrop: () => {
+      return ({ commands }) => {
+        return commands.setCrop(null);
       };
     },
   };

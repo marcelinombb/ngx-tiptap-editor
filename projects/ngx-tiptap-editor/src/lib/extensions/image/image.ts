@@ -1,7 +1,17 @@
-import { type Editor, Node, nodeInputRule } from '@tiptap/core';
+import { type Editor, Node, nodeInputRule, mergeAttributes } from '@tiptap/core';
 import { Plugin, PluginKey } from 'prosemirror-state';
 
 import { ImageView } from './imageView';
+import {
+  CropRegion,
+  getCropInlineStyle,
+  parseCropFromElement,
+  isFullCrop,
+} from './image-cropper-math';
+
+export * from './image-cropper-math';
+export * from './image-cropper-canvas';
+export { default as ImageCropper } from './ImageCropper';
 
 // ─────────────────────────────────────────────────────────────
 // PROXY URL ABSTRACTION
@@ -186,6 +196,18 @@ export const Image = Node.create<ImageOptions>({
       alt: { default: null },
       title: { default: null },
       classes: { default: '' },
+      crop: {
+        default: null,
+        parseHTML: (element) => parseCropFromElement(element),
+        renderHTML: (attributes) => {
+          if (!attributes['crop'] || isFullCrop(attributes['crop'])) {
+            return {};
+          }
+          return {
+            'data-crop': JSON.stringify(attributes['crop']),
+          };
+        },
+      },
     };
   },
 
@@ -197,9 +219,32 @@ export const Image = Node.create<ImageOptions>({
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    const { src } = HTMLAttributes;
-    return ['img', { src, style: 'display: table-cell', draggable: false }];
+  renderHTML({ node, HTMLAttributes }) {
+    let crop: CropRegion | null =
+      node?.attrs?.['crop'] ?? (HTMLAttributes['crop'] as CropRegion) ?? null;
+
+    if (!crop && HTMLAttributes['data-crop']) {
+      try {
+        crop = JSON.parse(HTMLAttributes['data-crop']);
+      } catch {
+        crop = null;
+      }
+    }
+
+    const cropStyle = getCropInlineStyle(crop);
+    const existingStyle = HTMLAttributes['style']
+      ? HTMLAttributes['style'].replace(/;?$/, '; ')
+      : '';
+    const style = `${existingStyle}display: table-cell;${cropStyle ? ' ' + cropStyle : ''}`.trim();
+    const dataCropAttr = crop && !isFullCrop(crop) ? { 'data-crop': JSON.stringify(crop) } : {};
+
+    return [
+      'img',
+      mergeAttributes(this?.options?.HTMLAttributes, HTMLAttributes, dataCropAttr, {
+        style,
+        draggable: 'false',
+      }),
+    ];
   },
 
   addCommands() {

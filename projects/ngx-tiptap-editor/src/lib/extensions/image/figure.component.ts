@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 import ImageCropper from './ImageCropper';
+import { CropRegion } from './image-cropper-math';
 
 @Component({
   selector: 'ex-figure',
@@ -122,6 +123,7 @@ export class FigureComponent extends AngularNodeViewComponent implements OnDestr
       image: img as HTMLImageElement,
       imageWrapper: wrapperEl,
       figcaption: figcaption as HTMLElement,
+      getCrop: () => this.getImageCrop(),
       updateAttributes: (attrs) => this.handleCropUpdate(attrs),
     });
   }
@@ -136,8 +138,19 @@ export class FigureComponent extends AngularNodeViewComponent implements OnDestr
       // Using type assertion to access private properties if ImageCropper doesn't expose them
       (this.cropper as any).target.image = img;
       (this.cropper as any).target.figcaption = figcaption;
+      (this.cropper as any).target.getCrop = () => this.getImageCrop();
       this.cropper.toggle();
     }
+  }
+
+  private getImageCrop(): CropRegion | null {
+    let crop: CropRegion | null = null;
+    this.node().content.forEach((child) => {
+      if (child.type.name === 'image' && child.attrs['crop']) {
+        crop = child.attrs['crop'];
+      }
+    });
+    return crop || (this.node().attrs['crop'] ?? null);
   }
 
   handleCropUpdate(attributes: Record<string, any>) {
@@ -150,21 +163,33 @@ export class FigureComponent extends AngularNodeViewComponent implements OnDestr
     const { view } = this.editor();
     let tr = view.state.tr;
 
-    // Handle image src update on child node
+    // Handle image attributes on child node
+    const imageAttrsToUpdate: Record<string, any> = {};
+    if (attributes['crop'] !== undefined) {
+      imageAttrsToUpdate['crop'] = attributes['crop'];
+    }
     if (attributes['src']) {
+      imageAttrsToUpdate['src'] = attributes['src'];
+    }
+
+    if (Object.keys(imageAttrsToUpdate).length > 0) {
       this.node().content.forEach((child, offset) => {
         if (child.type.name === 'image') {
           tr = tr.setNodeMarkup(pos + 1 + offset, undefined, {
             ...child.attrs,
-            src: attributes['src'],
+            ...imageAttrsToUpdate,
           });
         }
       });
     }
 
-    // Handle figure attributes (like width)
+    // Handle figure attributes (like width, crop)
     const figureAttrs = { ...this.node().attrs };
     let figureChanged = false;
+    if (attributes['crop'] !== undefined && attributes['crop'] !== figureAttrs['crop']) {
+      figureAttrs['crop'] = attributes['crop'];
+      figureChanged = true;
+    }
     if (attributes['width'] && attributes['width'] !== figureAttrs['width']) {
       figureAttrs['width'] = attributes['width'];
       figureChanged = true;
