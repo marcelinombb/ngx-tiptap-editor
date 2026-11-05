@@ -1,7 +1,7 @@
 <div class="split-container">
   <div class="editor-column">
     <tiptap-editor
-      [content]="defaultText"
+      [content]="defaultText()"
       [extensionsConfig]="extensionsConfig"
       (onContentChange)="onContentChange($event)"
       (onEditorReady)="onEditorReady($event)"

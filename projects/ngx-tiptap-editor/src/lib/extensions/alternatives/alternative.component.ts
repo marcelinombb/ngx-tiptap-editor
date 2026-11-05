@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from '../../node-view';
 import { EditorButtonComponent } from '../../components/editor-button.component';
 
 @Component({

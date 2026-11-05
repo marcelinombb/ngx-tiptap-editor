@@ -70,7 +70,6 @@
     "@tiptap/starter-kit": "^3.20.0",
     "@wiris/mathtype-html-integration-devkit": "^1.17.17",
     "katex": "^0.19.1",
-    "ngx-tiptap": "^14.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

@@ -1,5 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import { AngularNodeViewRenderer } from 'ngx-tiptap';
+import { AngularNodeViewRenderer } from '../../node-view';
 import { AnswerBoxComponent } from './answer-box.component';
 import { Injector } from '@angular/core';
 import { findNodeFromSelection } from '../../utils/tiptap-selection';

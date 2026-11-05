@@ -1,6 +1,6 @@
 # Guia de Criação de NodeViews com Angular
 
-Este guia explica como criar NodeViews interativos usando componentes Angular e a biblioteca `ngx-tiptap`.
+Este guia explica como criar NodeViews interativos usando componentes Angular e a biblioteca `ngx-tiptap-editor`.
 
 NodeViews são usados quando você precisa de uma representação complexa para um node do Tiptap, com interatividade, estado próprio ou layout que o HTML padrão não consegue fornecer facilmente.
 
@@ -14,7 +14,7 @@ Um componente simples que exibe um contador interativo.
 
 ```typescript
 import { Component } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from 'ngx-tiptap-editor';
 
 @Component({
   selector: 'app-node-view-counter',
@@ -64,7 +64,7 @@ Você precisa registrar o NodeView no seu Node extension usando `addNodeView` e 
 
 ```typescript
 import { Node, mergeAttributes } from '@tiptap/core';
-import { AngularNodeViewRenderer } from 'ngx-tiptap';
+import { AngularNodeViewRenderer } from 'ngx-tiptap-editor';
 import { CounterComponent } from './counter.component'; // Importe seu componente
 import { Injector } from '@angular/core';
 

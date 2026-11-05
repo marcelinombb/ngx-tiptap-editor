@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from '../../node-view';
 import { NodeSelection } from '@tiptap/pm/state';
 
 @Component({

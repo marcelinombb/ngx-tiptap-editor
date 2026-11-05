@@ -16,7 +16,7 @@ NodeViews allow you to render complex interactive UI for a ProseMirror node, usi
 
 ### Key Rules for Components:
 
-- The component **must** implement the `AngularNodeViewComponent` interface from `ngx-tiptap`.
+- The component **must** implement or extend the `AngularNodeViewComponent` base class from `ngx-tiptap-editor`.
 - It **should** be a Standalone Component (`standalone: true`).
 - Input properties like `node` and `editor` should ideally use Angular Signals (`input.required<ProseMirrorNode>()`, `input.required<Editor>()`) since the custom `AngularNodeViewRenderer` supports `setInput`.
 - If the node allows nested editable content (e.g., paragraphs inside a box), include an element with the `data-node-view-content` attribute in your template where the content should be rendered.
@@ -25,7 +25,7 @@ NodeViews allow you to render complex interactive UI for a ProseMirror node, usi
 
 ```typescript
 import { Component, input } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from 'ngx-tiptap-editor';
 import { Editor } from '@tiptap/core';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 

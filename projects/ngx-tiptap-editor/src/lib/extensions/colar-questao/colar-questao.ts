@@ -2,7 +2,7 @@ import { mergeAttributes, Node, type NodeViewRendererProps } from '@tiptap/core'
 import { DOMSerializer, Fragment, type Node as PmNode, type Schema, Slice } from '@tiptap/pm/model';
 import { type EditorView } from '@tiptap/pm/view';
 import { type EditorState } from '@tiptap/pm/state';
-import { AngularNodeViewRenderer } from 'ngx-tiptap';
+import { AngularNodeViewRenderer } from '../../node-view';
 import { ColarQuestaoComponent } from './colar-questao.component';
 import { Injector } from '@angular/core';
 

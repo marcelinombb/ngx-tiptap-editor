@@ -10,7 +10,7 @@ import {
   signal,
   AfterViewInit,
 } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from '../../node-view';
 import ImageCropper from './ImageCropper';
 import { CropRegion } from './image-cropper-math';
 

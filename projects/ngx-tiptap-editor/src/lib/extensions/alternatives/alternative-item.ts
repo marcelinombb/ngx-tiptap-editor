@@ -1,5 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import { AngularNodeViewRenderer } from 'ngx-tiptap';
+import { AngularNodeViewRenderer } from '../../node-view';
 import { Injector } from '@angular/core';
 import { AlternativeItemComponent } from './alternative-item.component';
 

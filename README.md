@@ -1,10 +1,55 @@
-# ngx-tiptap-editor
+# ngx-tiptap-editor Blueprint
 
 > A powerful, feature-rich Tiptap-based Rich Text Editor for Angular 18+, specifically designed for educational and technical content.
 
 [![NPM Version](https://img.shields.io/npm/v/ngx-tiptap-editor?style=flat-square)](https://www.npmjs.com/package/ngx-tiptap-editor)
 [![Angular Version](https://img.shields.io/badge/angular-%23DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
 [![Tiptap Version](https://img.shields.io/badge/tiptap-%2324292e.svg?style=flat-square&logo=tiptap&logoColor=white)](https://tiptap.dev/)
+
+## System Overview
+
+`ngx-tiptap-editor` is a monorepo workspace containing an Angular rich-text editor library and an interactive demonstration application. The system integrates ProseMirror and Tiptap v2 with educational assessment primitives (answer boxes, multiple-choice alternatives, column associations, question paste parsers), mathematical rendering engines (KaTeX and Wiris MathType/ChemType via WebAssembly), and custom figure/canvas image cropping capabilities.
+
+```mermaid
+graph TD
+  App["src/app (Demo Application)"] --> Lib["projects/ngx-tiptap-editor (Core Library)"]
+  Lib --> Toolbar["components (Toolbar & Dropdowns)"]
+  Lib --> Ext["extensions (Tiptap Nodes & Marks)"]
+  Ext --> Math["KaTeX & MathType (WASM/Katex)"]
+  Ext --> Edu["Alternatives, AnswerBox, Association"]
+  Ext --> Img["Figure & ImageCropper (Canvas)"]
+  Lib --> Menus["floating-menus (Bubble Menus)"]
+```
+
+## Local Interface & Invariants
+
+- `[commitlint.config.js]`: Root commit message validation rules conforming to `@commitlint/config-conventional`.
+- `[eslint.config.js]`: Workspace ESLint configuration enforcing TypeScript strictness and Angular template rules across projects.
+- Invariants: Workspace commit messages and lint rules must pass validation checks prior to release tagging.
+- Side Effects: None.
+
+## Subdirectories & System Boundaries
+
+- [projects](./projects/README.md): Angular multi-project workspace folder hosting the publishable `ngx-tiptap-editor` library, its extensions, components, directives, and public API surface.
+- [src](./src/README.md): Interactive demonstration application entry point and development harness for testing editor features in an active Angular 18+ browser shell.
+
+## Global Invariants
+
+- **Angular Version Compatibility**: Subsystems depend on standalone Angular component architecture (Angular 18+) with signal-based inputs/outputs and `ControlValueAccessor` contracts.
+- **WASM Asset Availability**: MathType features require Wiris telemeter WebAssembly binaries served under `/assets/mathtype/` or equivalent host paths.
+- **Non-Destructive Styling**: Font assets for KaTeX are decoupled from the JavaScript bundle to maintain an optimized package footprint (~530 KB), requiring explicit stylesheet inclusion by host consumers.
+
+## Global Side Effects
+
+- **DOM Mutation**: Editor instances mount ProseMirror DOM nodes into component containers and bind window/document event listeners for dragging, resizing, and floating menu positioning.
+- **Network Proxying**: Remote image fetching may route through configured server proxy endpoints to bypass browser CORS and mixed-content restrictions.
+- **External Dialogs**: MathType integration launches Wiris iframe/modal editors in the global browser window.
+
+## System Verification
+
+- Run: `npm test`
+
+---
 
 ## ✨ Features
 
