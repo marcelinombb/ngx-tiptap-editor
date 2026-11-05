@@ -88,7 +88,9 @@ export class TiptapEditorIntegration extends IntegrationModel {
       if (this.editorParameters && this.editorParameters.language) {
         return this.editorParameters.language;
       }
-    } catch (e) { }
+    } catch {
+      // ignore
+    }
 
     return super.getLanguage();
   }
@@ -146,6 +148,9 @@ export class TiptapEditorIntegration extends IntegrationModel {
     // Store the editor selection as it will be lost upon opening the modal
     this.core.editionProperties.selection = this.editor.state.selection;
 
+    // Focus on the selected editor when multiple editor instances are present
+    window.WirisPlugin.currentInstance = this;
+
     // Bypassing navigator.onLine check as it's unreliable in some environments
     this.core.editionProperties.dbclick = false;
     this.core.editionProperties.isNewElement = true;
@@ -186,8 +191,7 @@ export class TiptapEditorIntegration extends IntegrationModel {
 
       const formulaImg = this.createViewImage(mathml);
 
-      // Insert the content
-      this.editor.chain().focus().insertContentAt({ from, to }, formulaImg).run();
+      this.replaceRangeWithFormula(from, to, formulaImg);
     } else {
       // Updating existing element
       const temporalImage = core.editionProperties.temporalImage;
@@ -227,7 +231,7 @@ export class TiptapEditorIntegration extends IntegrationModel {
           const from = mathtypePos;
           const to = mathtypePos + node.nodeSize;
           const formulaImg = this.createViewImage(mathml);
-          this.editor.chain().focus().insertContentAt({ from, to }, formulaImg).run();
+          this.replaceRangeWithFormula(from, to, formulaImg);
         }
       } else if (mathml) {
         // Fallback if temporalImage is lost but we have mathml?
@@ -237,6 +241,17 @@ export class TiptapEditorIntegration extends IntegrationModel {
     }
 
     return modelElementNew;
+  }
+
+  /**
+   * Replaces the given range with the formula and puts the caret right after it.
+   */
+  private replaceRangeWithFormula(from: number, to: number, formulaImg: string) {
+    this.editor
+      .chain()
+      .focus()
+      .insertContentAt({ from, to }, formulaImg, { updateSelection: true })
+      .run();
   }
 
   insertFormula(
@@ -279,8 +294,9 @@ export class TiptapEditorIntegration extends IntegrationModel {
     };
 
     Object.keys(payload).forEach((key) => {
-      if (key === 'mathml_origin' || key === 'editor_origin')
-        !payload[key] ? delete payload[key] : {};
+      if ((key === 'mathml_origin' || key === 'editor_origin') && !payload[key]) {
+        delete payload[key];
+      }
     });
 
     try {

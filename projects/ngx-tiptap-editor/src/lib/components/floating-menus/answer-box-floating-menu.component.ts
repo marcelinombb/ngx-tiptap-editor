@@ -1,11 +1,18 @@
-import { Component, input, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnInit,
+  OnDestroy,
+  signal,
+  inject,
+} from '@angular/core';
 import { FloatingMenuService } from '../../services/floating-menu.service';
 import { Editor } from '@tiptap/core';
 import { TiptapBubbleMenuDirective } from '../../directives/tiptap-bubble-menu.directive';
 import { EditorButtonComponent } from '../editor-button.component';
 import { NodeSelection } from '@tiptap/pm/state';
-import { findParentNode } from '@tiptap/core';
-import { Node as ProseMirrorNode } from '@tiptap/pm/model';
+import { findNodeFromSelection } from '../../utils/tiptap-selection';
 
 @Component({
   selector: 'answer-box-floating-menu',
@@ -142,6 +149,7 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnswerBoxFloatingMenuComponent implements OnInit, OnDestroy {
   editor = input.required<Editor>();
@@ -154,18 +162,20 @@ export class AnswerBoxFloatingMenuComponent implements OnInit, OnDestroy {
 
   private floatingMenuService = inject(FloatingMenuService);
 
+  private onSync = () => this.syncState();
+
   ngOnInit() {
     this.floatingMenuService.registerMenu('answerBox');
-    this.editor().on('transaction', () => this.syncState());
-    this.editor().on('selectionUpdate', () => this.syncState());
-    this.editor().on('focus', () => this.syncState());
+    this.editor().on('transaction', this.onSync);
+    this.editor().on('selectionUpdate', this.onSync);
+    this.editor().on('focus', this.onSync);
     this.syncState();
   }
 
   ngOnDestroy() {
-    this.editor().off('transaction', this.syncState);
-    this.editor().off('selectionUpdate', this.syncState);
-    this.editor().off('focus', this.syncState);
+    this.editor().off('transaction', this.onSync);
+    this.editor().off('selectionUpdate', this.onSync);
+    this.editor().off('focus', this.onSync);
   }
 
   private syncState() {
@@ -203,13 +213,7 @@ export class AnswerBoxFloatingMenuComponent implements OnInit, OnDestroy {
     const { state, view } = this.editor();
     const { selection } = state;
 
-    let answerBoxNode: { node: ProseMirrorNode; pos: number } | undefined;
-
-    if (selection instanceof NodeSelection && selection.node.type.name === 'answerBox') {
-      answerBoxNode = { node: selection.node, pos: selection.from };
-    } else {
-      answerBoxNode = findParentNode((node) => node.type.name === 'answerBox')(selection);
-    }
+    const answerBoxNode = findNodeFromSelection(selection, 'answerBox');
 
     if (answerBoxNode) {
       const dom = view.nodeDOM(answerBoxNode.pos) as HTMLElement | null;

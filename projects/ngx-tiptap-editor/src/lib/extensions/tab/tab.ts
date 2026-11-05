@@ -1,4 +1,4 @@
-import { type Editor, Node, mergeAttributes } from '@tiptap/core';
+import { Node, mergeAttributes } from '@tiptap/core';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -7,14 +7,6 @@ declare module '@tiptap/core' {
       tabOutdent: () => ReturnType;
     };
   }
-}
-
-function addTab(editor: Editor): boolean {
-  return editor.commands.insertContentAt(
-    editor.view.state.selection.$anchor.pos,
-    { type: 'teclatab' },
-    { updateSelection: true },
-  );
 }
 
 export const Tab = Node.create({
@@ -36,8 +28,12 @@ export const Tab = Node.create({
     return {
       tabIndent:
         () =>
-        ({ editor }: { editor: Editor }) => {
-          return addTab(editor);
+        ({ commands, state }) => {
+          return commands.insertContentAt(
+            state.selection.$anchor.pos,
+            { type: 'teclatab' },
+            { updateSelection: true },
+          );
         },
       tabOutdent: () => () => {
         return true;
@@ -64,7 +60,8 @@ export const Tab = Node.create({
       'span',
       mergeAttributes(HTMLAttributes, {
         class: 'ex-tab',
-        style: 'display: inline-block; width: 4ch; min-width: 4ch; vertical-align: baseline; user-select: none; pointer-events: none;',
+        style:
+          'display: inline-block; width: 4ch; min-width: 4ch; vertical-align: baseline; user-select: none; pointer-events: none;',
       }),
     ];
   },
@@ -73,7 +70,7 @@ export const Tab = Node.create({
     return {
       Tab: () => {
         if (!(this.editor.isActive('bulletList') || this.editor.isActive('orderedList'))) {
-          return addTab(this.editor);
+          return this.editor.commands.tabIndent();
         }
         return false;
       },

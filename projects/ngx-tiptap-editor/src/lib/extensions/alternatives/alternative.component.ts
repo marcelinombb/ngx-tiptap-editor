@@ -1,5 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 import { EditorButtonComponent } from '../../components/editor-button.component';
 
@@ -7,40 +6,41 @@ import { EditorButtonComponent } from '../../components/editor-button.component'
   selector: 'alternative-component',
   template: `
     <div class="ex-alternative-wrapper" [class.ex-selected]="selected()">
-      <div class="ex-alternative-controls" contenteditable="false" *ngIf="editor().isEditable">
-        <div class="controls-left">
-          <span class="alternative-title">Alternativas</span>
+      @if (editor().isEditable) {
+        <div class="ex-alternative-controls" contenteditable="false">
+          <div class="controls-left">
+            <span class="alternative-title">Alternativas</span>
+          </div>
+          <div class="controls-right">
+            <editor-button
+              icon="delete-bin"
+              title="Remover Alternativas"
+              (onClick)="removeAlternative()"
+            ></editor-button>
+          </div>
         </div>
-        <div class="controls-right">
-          <editor-button
-            icon="delete-bin"
-            title="Remover Alternativas"
-            (onClick)="removeAlternative()"
-          ></editor-button>
-        </div>
-      </div>
+      }
 
       <div class="ex-alternative-col-wrapper">
         <div class="ex-alternative-content" data-node-view-content></div>
-        <div
-          contenteditable="false"
-          class="ex-alternative-add-btn-wrapper"
-          *ngIf="editor().isEditable"
-        >
-          <button
-            class="ex-alternative-add-btn"
-            (click)="addAlternativeItem($event)"
-            title="Adicionar item"
-          >
-            + Item
-          </button>
-        </div>
+        @if (editor().isEditable) {
+          <div contenteditable="false" class="ex-alternative-add-btn-wrapper">
+            <button
+              class="ex-alternative-add-btn"
+              (click)="addAlternativeItem($event)"
+              title="Adicionar item"
+            >
+              + Item
+            </button>
+          </div>
+        }
       </div>
     </div>
   `,
   standalone: true,
-  imports: [CommonModule, EditorButtonComponent],
+  imports: [EditorButtonComponent],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlternativeComponent extends AngularNodeViewComponent {
   removeAlternative() {

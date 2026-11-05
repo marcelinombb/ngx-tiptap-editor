@@ -1,19 +1,11 @@
-import {
-  findParentNodeClosestToPos,
-  mergeAttributes,
-  Node as TiptapNode,
-} from '@tiptap/core';
+import { findParentNodeClosestToPos, mergeAttributes, Node as TiptapNode } from '@tiptap/core';
 import { Injector } from '@angular/core';
 import { AngularNodeViewRenderer } from 'ngx-tiptap';
 import { FigureComponent } from './figure.component';
-import {
-  defaultClasses,
-  allowedClasses,
-  alignClasses,
-  parseWidth,
-} from './figure-utils';
+import { defaultClasses, allowedClasses, alignClasses, parseWidth } from './figure-utils';
 import { createFigureCommands } from './figure-commands';
 import { createFigurePlugins } from './figure-plugins';
+import { CropRegion, parseCropFromElement, isFullCrop } from './image-cropper-math';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -28,6 +20,8 @@ declare module '@tiptap/core' {
       setImageWidth: (width: number | null) => ReturnType;
       cropImage: () => ReturnType;
       toggleGreyScale: () => ReturnType;
+      setCrop: (crop: CropRegion | null) => ReturnType;
+      resetCrop: () => ReturnType;
     };
   }
 }
@@ -116,6 +110,14 @@ export const Figure = TiptapNode.create<ImageOptions>({
             parseWidth(element.querySelector('img')?.style.width) ||
             null
           );
+        },
+      },
+      crop: {
+        default: null,
+        parseHTML: (element) => parseCropFromElement(element),
+        renderHTML: (attributes) => {
+          if (!attributes['crop'] || isFullCrop(attributes['crop'])) return {};
+          return { 'data-crop': JSON.stringify(attributes['crop']) };
         },
       },
     };

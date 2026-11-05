@@ -27,11 +27,13 @@
               },
               {
                 "glob": "**/*.wasm",
-                "input": "dist/ngx-tiptap-editor/assets/telemeter-wasm",
+                "input": "node_modules/@wiris/mathtype-html-integration-devkit/telemeter-wasm",
                 "output": "assets/mathtype/"
               }
             ],
             "styles": [
+              "node_modules/katex/dist/katex.min.css",
+              "node_modules/@wiris/mathtype-html-integration-devkit/styles/styles.css",
               "src/styles.css"
             ]
           },
@@ -63,9 +65,7 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "prebundle": {
-              "exclude": [
-                "ngx-tiptap-editor"
-              ]
+              "exclude": ["ngx-tiptap-editor"]
             }
           },
           "configurations": {
@@ -85,6 +85,9 @@
           "builder": "@angular/build:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
+            "loader": {
+              ".svg": "file"
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -92,11 +95,13 @@
               },
               {
                 "glob": "**/*.wasm",
-                "input": "dist/ngx-tiptap-editor/assets/telemeter-wasm",
+                "input": "node_modules/@wiris/mathtype-html-integration-devkit/telemeter-wasm",
                 "output": "assets/mathtype/"
               }
             ],
             "styles": [
+              "node_modules/katex/dist/katex.min.css",
+              "node_modules/@wiris/mathtype-html-integration-devkit/styles/styles.css",
               "src/styles.css"
             ]
           }
@@ -104,10 +109,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -136,7 +138,14 @@
             "tsConfig": "projects/ngx-tiptap-editor/tsconfig.spec.json",
             "loader": {
               ".svg": "file"
-            }
+            },
+            "assets": [
+              {
+                "glob": "**/*.wasm",
+                "input": "node_modules/@wiris/mathtype-html-integration-devkit/telemeter-wasm",
+                "output": "assets/mathtype/"
+              }
+            ]
           }
         },
         "lint": {

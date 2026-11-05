@@ -1,4 +1,13 @@
-import { Component, input, signal, ElementRef, viewChild, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+  ElementRef,
+  viewChild,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { FloatingMenuService } from '../../services/floating-menu.service';
 import { updateLatexDisplay } from '../../extensions/katex/katexView';
 import { FormsModule } from '@angular/forms';
@@ -127,6 +136,7 @@ import { KatexMenuService } from '../../services/katex-menu.service';
   ],
   standalone: true,
   imports: [FormsModule, TiptapBubbleMenuDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KatexFloatingMenuComponent implements OnInit {
   editor = input.required<Editor>();
@@ -177,14 +187,16 @@ export class KatexFloatingMenuComponent implements OnInit {
     this.currentFormula.set(latexFormula);
     try {
       updateLatexDisplay(latexFormula, this.preview().nativeElement);
-    } catch (e) {}
+    } catch {
+      // ignore preview errors
+    }
   };
 
   onFormulaChange(value: string) {
     this.formula.set(value);
     try {
       updateLatexDisplay(value, this.preview().nativeElement);
-    } catch (e) {
+    } catch {
       // ignore preview errors
     }
   }

@@ -1,12 +1,19 @@
-import { Component, input, OnInit, signal, viewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnInit,
+  OnDestroy,
+  signal,
+  viewChild,
+  inject,
+} from '@angular/core';
 import { FloatingMenuService } from '../../services/floating-menu.service';
 import { EditorButtonComponent } from '../editor-button.component';
 import { EditorDropdownComponent } from '../editor-dropdown.component';
 import { Editor } from '@tiptap/core';
 import { TiptapBubbleMenuDirective } from '../../directives/tiptap-bubble-menu.directive';
-import { findParentNode } from '@tiptap/core';
-import { NodeSelection } from '@tiptap/pm/state';
-import { Node as ProseMirrorNode } from '@tiptap/pm/model';
+import { findFigureNode } from '../../utils/tiptap-selection';
 
 @Component({
   standalone: true,
@@ -29,8 +36,8 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model';
           (onClick)="toggleCaption()"
         ></editor-button>
         <editor-dropdown
-          #imagesize
-          [title]="'Tamanho da Imagem'"
+          #imagealign
+          [title]="'Alinhamento da Imagem'"
           [icon]="'image-middle'"
           orientation="horizontal"
         >
@@ -128,8 +135,9 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ImageFloatingMenuComponent implements OnInit {
+export class ImageFloatingMenuComponent implements OnInit, OnDestroy {
   editor = input.required<Editor>();
 
   activeClasses = signal(new Set<string>());
@@ -138,12 +146,18 @@ export class ImageFloatingMenuComponent implements OnInit {
 
   private floatingMenuService = inject(FloatingMenuService);
 
+  private onTransaction = () => {
+    this.syncImageState();
+  };
+
   ngOnInit() {
     this.floatingMenuService.registerMenu('image');
     this.floatingMenuService.registerMenu('figure');
-    this.editor().on('transaction', () => {
-      this.syncImageState();
-    });
+    this.editor().on('transaction', this.onTransaction);
+  }
+
+  ngOnDestroy() {
+    this.editor().off('transaction', this.onTransaction);
   }
 
   private syncImageState() {
@@ -155,13 +169,7 @@ export class ImageFloatingMenuComponent implements OnInit {
       return;
     }
 
-    let figureNode: { node: ProseMirrorNode; pos: number } | undefined;
-
-    if (selection instanceof NodeSelection && selection.node.type.name === 'figure') {
-      figureNode = { node: selection.node, pos: selection.from };
-    } else {
-      figureNode = findParentNode((node) => node.type.name === 'figure')(selection);
-    }
+    const figureNode = findFigureNode(selection);
 
     if (!figureNode) {
       this.activeClasses.set(new Set());
@@ -178,7 +186,7 @@ export class ImageFloatingMenuComponent implements OnInit {
   }
 
   onHide = () => {
-    this.imageSizeDropdown().open = false;
+    this.imageSizeDropdown().close();
   };
 
   onShow = () => {
@@ -189,13 +197,7 @@ export class ImageFloatingMenuComponent implements OnInit {
     const { state, view } = this.editor();
     const { selection } = state;
 
-    let figureNode: { node: ProseMirrorNode; pos: number } | undefined;
-
-    if (selection instanceof NodeSelection && selection.node.type.name === 'figure') {
-      figureNode = { node: selection.node, pos: selection.from };
-    } else {
-      figureNode = findParentNode((node) => node.type.name === 'figure')(selection);
-    }
+    const figureNode = findFigureNode(selection);
 
     if (figureNode) {
       const dom = view.nodeDOM(figureNode.pos) as HTMLElement | null;

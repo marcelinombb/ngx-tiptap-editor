@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 import { NodeSelection } from '@tiptap/pm/state';
 
@@ -81,6 +81,7 @@ import { NodeSelection } from '@tiptap/pm/state';
   ],
   standalone: true,
   imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnswerBoxComponent extends AngularNodeViewComponent {
   // Computed properties from node attributes

@@ -3,6 +3,7 @@ import { type Node as ProseMirrorNode, type Node } from '@tiptap/pm/model';
 import { type NodeView } from '@tiptap/pm/view';
 
 import { type ImageProxyUrlBuilder, ImageProxyBuilders, POST_BODY_TOKEN } from './image';
+import { applyCropToElement } from './image-cropper-math';
 
 // ─────────────────────────────────────────────────────────────
 // REGEX
@@ -39,7 +40,6 @@ export class ImageView implements NodeView {
     if (typeof proxyUrl === 'string') {
       this.proxyUrlBuilder = ImageProxyBuilders.queryParam(proxyUrl);
     } else if (typeof proxyUrl === 'function') {
-
       this.proxyUrlBuilder = proxyUrl;
     }
 
@@ -149,7 +149,8 @@ export class ImageView implements NodeView {
         if (typeof result === 'string') resolve(result);
         else reject(new Error('[ImageView] FileReader retornou resultado inválido'));
       };
-      reader.onerror = () => reject(reader.error ?? new Error('[ImageView] FileReader falhou sem detalhes'));
+      reader.onerror = () =>
+        reject(reader.error ?? new Error('[ImageView] FileReader falhou sem detalhes'));
       reader.readAsDataURL(blob);
     });
   }
@@ -184,5 +185,11 @@ export class ImageView implements NodeView {
     if (node.attrs['src']) {
       image.setAttribute('src', node.attrs['src']);
     }
+    if (node.attrs['crop']) {
+      image.setAttribute('data-crop', JSON.stringify(node.attrs['crop']));
+    } else {
+      image.removeAttribute('data-crop');
+    }
+    applyCropToElement(image, node.attrs['crop']);
   }
 }

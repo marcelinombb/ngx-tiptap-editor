@@ -1,5 +1,4 @@
-import { Component, computed, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 import { AngularNodeViewComponent } from 'ngx-tiptap';
 
 @Component({
@@ -11,24 +10,23 @@ import { AngularNodeViewComponent } from 'ngx-tiptap';
       [attr.data-col-type]="colType()"
     >
       <div class="ex-association-col-content" data-node-view-content></div>
-      <div
-        contenteditable="false"
-        class="ex-association-add-btn-wrapper"
-        *ngIf="editor().isEditable"
-      >
-        <button
-          class="ex-association-add-btn"
-          (click)="addAssociationItem($event)"
-          title="Adicionar item"
-        >
-          + Item
-        </button>
-      </div>
+      @if (editor().isEditable) {
+        <div contenteditable="false" class="ex-association-add-btn-wrapper">
+          <button
+            class="ex-association-add-btn"
+            (click)="addAssociationItem($event)"
+            title="Adicionar item"
+          >
+            + Item
+          </button>
+        </div>
+      }
     </div>
   `,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssociationColumnComponent extends AngularNodeViewComponent {
   colType = computed(() => this.node().attrs['type']);
@@ -37,7 +35,6 @@ export class AssociationColumnComponent extends AngularNodeViewComponent {
     event.preventDefault();
     event.stopPropagation();
 
-    const { view } = this.editor();
     const getPosFn = this.getPos();
     if (typeof getPosFn !== 'function') return;
     const pos = getPosFn();

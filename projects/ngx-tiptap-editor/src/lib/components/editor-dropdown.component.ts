@@ -9,7 +9,10 @@ import {
   input,
   model,
   signal,
+  ChangeDetectionStrategy,
+  DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EditorButtonComponent } from './editor-button.component';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ClickOutsideDirective } from '../directives/click-outside.directive';
@@ -34,14 +37,17 @@ export class EditorDropdownService {
       <button
         [class]="buttonClasses()"
         [title]="displayTitle()"
+        [attr.aria-label]="displayTitle()"
+        aria-haspopup="true"
+        [attr.aria-expanded]="open()"
         (click)="toggle()"
         [disabled]="disabled()"
       >
-        <span class="ex-btn-caret" [class.open]="open"></span>
+        <span class="ex-btn-caret" [class.open]="open()"></span>
       </button>
       <div
         class="ex-dropdown-menu"
-        [class.ex-dropdown-open]="open"
+        [class.ex-dropdown-open]="open()"
         [class.vertical]="orientation() === 'vertical'"
         [class.horizontal]="orientation() === 'horizontal'"
       >
@@ -51,11 +57,14 @@ export class EditorDropdownService {
   `,
   styleUrls: ['editor-dropdown.component.scss', '../assets/icons/icons.css'],
   imports: [ClickOutsideDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditorDropdownComponent implements AfterContentInit {
+  private destroyRef = inject(DestroyRef);
+
   icon = input<string>();
   orientation = input<'vertical' | 'horizontal'>('vertical');
-  open = false;
+  open = signal(false);
   currentIcon = signal('');
   title = model<string>('');
   updateIcon = input(true);
@@ -88,14 +97,12 @@ export class EditorDropdownComponent implements AfterContentInit {
 
   readonly isActive = computed(() => !!this.activeButton());
 
-  readonly buttonClasses = computed(() => {
-    return {
-      'ex-toolbar-button': true,
-      btn: true,
-      ['btn-' + this.displayIcon()]: !!this.displayIcon(),
-      'ex-button-active': this.isActive(),
-    };
-  });
+  readonly buttonClasses = computed(() => ({
+    'ex-toolbar-button': true,
+    btn: true,
+    ['btn-' + this.displayIcon()]: !!this.displayIcon(),
+    'ex-button-active': this.isActive(),
+  }));
 
   constructor() {
     effect((onCleanup) => {
@@ -104,7 +111,7 @@ export class EditorDropdownComponent implements AfterContentInit {
         const subs = buttons.map((btn) =>
           btn.onClick.subscribe(() => {
             this.setCurrentButton(btn.icon()!, btn.title());
-            this.open = false;
+            this.open.set(false);
           }),
         );
         onCleanup(() => subs.forEach((s) => s.unsubscribe()));
@@ -115,11 +122,14 @@ export class EditorDropdownComponent implements AfterContentInit {
   ngAfterContentInit(): void {
     const buttons = this.buttons();
 
-    this.editorDropdownService.getOpenState().subscribe((isOpen) => {
-      if (this.open !== isOpen) {
-        this.open = isOpen;
-      }
-    });
+    this.editorDropdownService
+      .getOpenState()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isOpen) => {
+        if (this.open() !== isOpen) {
+          this.open.set(isOpen);
+        }
+      });
 
     if (this.icon()) {
       this.setCurrentButton(this.icon()!, this.title());
@@ -135,14 +145,18 @@ export class EditorDropdownComponent implements AfterContentInit {
   }
 
   clickOutside() {
-    this.open = false;
+    this.close();
+  }
+
+  close() {
+    this.open.set(false);
   }
 
   toggle() {
-    const newState = !this.open;
+    const newState = !this.open();
     if (newState) {
       this.editorDropdownService.setOpenState(false);
     }
-    this.open = newState;
+    this.open.set(newState);
   }
 }

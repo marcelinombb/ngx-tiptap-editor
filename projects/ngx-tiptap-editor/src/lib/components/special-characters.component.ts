@@ -1,5 +1,4 @@
-import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Editor } from '@tiptap/core';
 import {
@@ -10,7 +9,7 @@ import {
 @Component({
   selector: 'special-characters',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="ex-special-chars-container" (click)="$event.stopPropagation()">
       <div class="ex-special-chars-header">
@@ -19,13 +18,13 @@ import {
             type="text"
             class="ex-special-chars-search-input"
             placeholder="Buscar caractere..."
-            [(ngModel)]="searchQuery"
-            (input)="handleSearch()"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchChange($event)"
           />
         </div>
         <div class="ex-special-chars-preview">
-          <span class="ex-preview-char">{{ previewChar }}</span>
-          <span class="ex-preview-name" [title]="previewName">{{ previewName }}</span>
+          <span class="ex-preview-char">{{ previewChar() }}</span>
+          <span class="ex-preview-name" [title]="previewName()">{{ previewName() }}</span>
         </div>
       </div>
 
@@ -33,7 +32,7 @@ import {
         @for (category of categories; track category.name) {
           <button
             class="ex-special-chars-tab"
-            [class.active]="currentCategory === category.name"
+            [class.active]="currentCategory() === category.name"
             (click)="selectCategory(category.name)"
           >
             {{ category.name }}
@@ -42,8 +41,8 @@ import {
       </div>
 
       <div class="ex-special-chars-grid">
-        @if (displayedChars.length > 0) {
-          @for (char of displayedChars; track $index) {
+        @if (displayedChars().length > 0) {
+          @for (char of displayedChars(); track $index) {
             <button
               class="ex-special-char-btn"
               [title]="getCharName(char)"
@@ -60,48 +59,54 @@ import {
     </div>
   `,
   styleUrls: ['./special-characters.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpecialCharactersComponent {
   editor = input.required<Editor>();
   onSelect = output<string>();
 
-  categories = unicodeCategories;
-  currentCategory = unicodeCategories[0]?.name || 'Letras Gregas';
+  readonly categories = unicodeCategories;
+  currentCategory = signal<string>(unicodeCategories[0]?.name || 'Letras Gregas');
 
-  searchQuery = '';
-  displayedChars: string[] = [];
+  searchQuery = signal<string>('');
+  displayedChars = signal<string[]>([]);
 
-  previewChar = 'Ω';
-  previewName = 'Omega';
+  previewChar = signal<string>('Ω');
+  previewName = signal<string>('Omega');
 
   constructor() {
-    this.renderCharacters(this.currentCategory);
+    this.renderCharacters(this.currentCategory());
   }
 
   selectCategory(categoryName: string) {
-    this.currentCategory = categoryName;
-    this.searchQuery = '';
+    this.currentCategory.set(categoryName);
+    this.searchQuery.set('');
     this.renderCharacters(categoryName);
+  }
+
+  onSearchChange(query: string) {
+    this.searchQuery.set(query);
+    this.handleSearch();
   }
 
   renderCharacters(categoryName: string) {
     const category = this.categories.find((c) => c.name === categoryName);
     if (!category) return;
 
-    this.displayedChars = category.chars.filter(
-      (char) => char && char.trim() !== '' && char.charCodeAt(0) >= 32,
+    this.displayedChars.set(
+      category.chars.filter((char) => char && char.trim() !== '' && char.charCodeAt(0) >= 32),
     );
   }
 
   handleSearch() {
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
 
     if (!query) {
-      this.renderCharacters(this.currentCategory);
+      this.renderCharacters(this.currentCategory());
       return;
     }
 
-    this.displayedChars = [];
+    const matches: string[] = [];
 
     this.categories.forEach((category: UnicodeCategory) => {
       category.chars.forEach((char) => {
@@ -109,15 +114,17 @@ export class SpecialCharactersComponent {
 
         const charName = this.getCharName(char).toLowerCase();
         if (char.includes(query) || charName.includes(query)) {
-          this.displayedChars.push(char);
+          matches.push(char);
         }
       });
     });
+
+    this.displayedChars.set(matches);
   }
 
   updatePreview(char: string) {
-    this.previewChar = char;
-    this.previewName = this.getCharName(char);
+    this.previewChar.set(char);
+    this.previewName.set(this.getCharName(char));
   }
 
   insertCharacter(char: string) {

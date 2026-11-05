@@ -1,3 +1,1 @@
-@import '../../../../node_modules/katex/dist/katex.min.css';
-@import '../../../../node_modules/@wiris/mathtype-html-integration-devkit/styles/styles.css';
-@import './editor.scss';
+@use './editor.scss' as *;
