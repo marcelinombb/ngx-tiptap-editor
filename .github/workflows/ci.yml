@@ -30,8 +30,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run Unit Tests (Headless Chrome)
-        run: npm run test:ci
-
       - name: Build Library Package
         run: npm run build:lib
+
+      - name: Run Unit Tests (Headless Chrome)
+        run: npm run test:ci
