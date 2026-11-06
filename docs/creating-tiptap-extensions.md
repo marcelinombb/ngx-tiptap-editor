@@ -18,18 +18,18 @@ Ao criar um node com `Node.create`, você define um objeto de configuração rob
 
 Estas propriedades configuram como o ProseMirror entende o seu node.
 
-| Propriedade  | Tipo      | Descrição                                                                                                                              |
+| Propriedade | Tipo | Descrição |
 | :----------- | :-------- | :------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `name`       | `string`  | **Obrigatório**. Identificador único (ex: `'paragraph'`, `'customBlock'`).                                                             |
-| `group`      | `string`  | Onde este node se encaixa (ex: `'block'`, `'inline'`, `'list_item'`). Usado na propriedade `content` de outros nodes.                  |
-| `content`    | `string`  | Expressão de conteúdo. Ex: `'inline*'` (texto/marks), `'block+'` (1+ blocos), `'(text                                                  | image)\*'`. |
-| `inline`     | `boolean` | `true` para nodes que fluem com o texto (ex: mention). `false` para blocos. Padrão: `false`.                                           |
-| `atom`       | `boolean` | `true` se o node deve ser tratado como uma unidade indivisível (o cursor pula ele, não entra nele). Útil para embeds. Padrão: `false`. |
-| `selectable` | `boolean` | Se o usuário pode selecionar o node clicando nele. Padrão: `true`.                                                                     |
-| `draggable`  | `boolean` | Se o node pode ser arrastado. Padrão: `false`.                                                                                         |
-| `code`       | `boolean` | Se `true`, desativa transformações de texto automáticas dentro dele.                                                                   |
-| `defining`   | `boolean` | Se `true`, colar conteúdo dentro tende a preservar o conteúdo em vez de substituir o node. Essencial para containers (Blockquotes).    |
-| `isolating`  | `boolean` | Se `true`, edições (como backspace) não "vazam" para fora do node. Útil para Células de Tabela.                                        |
+| `name` | `string` | **Obrigatório**. Identificador único (ex: `'paragraph'`, `'customBlock'`). |
+| `group` | `string` | Onde este node se encaixa (ex: `'block'`, `'inline'`, `'list_item'`). Usado na propriedade `content` de outros nodes. |
+| `content` | `string` | Expressão de conteúdo. Ex: `'inline*'` (texto/marks), `'block+'` (1+ blocos), `'(text                                                  | image)\*'`. |
+| `inline` | `boolean` | `true` para nodes que fluem com o texto (ex: mention). `false` para blocos. Padrão: `false`. |
+| `atom` | `boolean` | `true` se o node deve ser tratado como uma unidade indivisível (o cursor pula ele, não entra nele). Útil para embeds. Padrão: `false`. |
+| `selectable` | `boolean` | Se o usuário pode selecionar o node clicando nele. Padrão: `true`. |
+| `draggable` | `boolean` | Se o node pode ser arrastado. Padrão: `false`. |
+| `code` | `boolean` | Se `true`, desativa transformações de texto automáticas dentro dele. |
+| `defining` | `boolean` | Se `true`, colar conteúdo dentro tende a preservar o conteúdo em vez de substituir o node. Essencial para containers (Blockquotes). |
+| `isolating` | `boolean` | Se `true`, edições (como backspace) não "vazam" para fora do node. Útil para Células de Tabela. |
 
 ### Exemplo de Configuração Avançada
 

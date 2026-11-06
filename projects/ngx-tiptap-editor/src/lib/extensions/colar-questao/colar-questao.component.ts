@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from '../../node-view';
 
 @Component({
   selector: 'colar-questao-component',

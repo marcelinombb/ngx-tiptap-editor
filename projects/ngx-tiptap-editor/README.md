@@ -6,6 +6,35 @@
 [![Angular Version](https://img.shields.io/badge/angular-%23DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
 [![Tiptap Version](https://img.shields.io/badge/tiptap-%2324292e.svg?style=flat-square&logo=tiptap&logoColor=white)](https://tiptap.dev/)
 
+## Overview
+
+`ngx-tiptap-editor` is an Angular library packaging Tiptap rich-text capabilities with customized extensions for educational questions, Wiris MathType/KaTeX formula rendering, structured response boxes, and advanced figure management.
+
+## Interface
+
+- `[eslint.config.js]`: Project-level ESLint configuration for the library package.
+- `[src/lib/tiptap-editor.ts:NgxTiptapEditor]`: Standalone Angular component implementing `ControlValueAccessor`.
+- `[src/lib/tiptap-editor.ts:EditorExtensionsConfig]`: Configuration model for customizing editor extensions.
+- `[src/lib/extension-factory.ts:ExtensionFactory]`: Extension builder assembling core, math, image, question, and table modules.
+- `[src/lib/extensions/image/image.ts:ImageProxyBuilders]`: URL generator utilities for external image proxy routing.
+- [Source (src)](./src/README.md) - Public API surface and core library subsystems.
+
+## Invariants
+
+- `[src/lib/tiptap-editor.ts:NgxTiptapEditor]`: Angular `ControlValueAccessor` interface lifecycle must be honored across forms integrations.
+- `[src/lib/tiptap-editor.ts:NgxTiptapEditor]`: Requires valid initialization before dispatching editor commands, and must release ProseMirror instances on component destruction.
+
+## Side Effects
+
+- `[src/lib/tiptap-editor.ts:NgxTiptapEditor]`: Renders and modifies ProseMirror DOM structures, dispatches change events, and manages focus events.
+- `[src/lib/extensions/mathtype/mathtype-integration.ts:TiptapEditorIntegration]`: Spawns Wiris dialogs and loads WebAssembly telemetry assets when MathType is invoked.
+
+## Verification
+
+- Run: `npm test`
+
+---
+
 ## ✨ Features
 
 - 📐 **Scientific Formula Support**: Full [KaTeX](https://katex.org/) and [MathType](https://www.wiris.com/mathtype/) integration.

@@ -9,6 +9,15 @@ export * from './lib/directives/click-outside.directive';
 export * from './lib/extension-factory';
 export * from './lib/utils/tiptap-selection';
 
+// NodeView Bridge
+export {
+  AngularNodeViewComponent,
+  AngularNodeViewRenderer,
+  type AngularNodeViewRendererOptions,
+  type RendererUpdateProps,
+  type AttrProps,
+} from './lib/node-view';
+
 // Extensions
 export * from './lib/extensions/image/image';
 export * from './lib/extensions/paragraph';

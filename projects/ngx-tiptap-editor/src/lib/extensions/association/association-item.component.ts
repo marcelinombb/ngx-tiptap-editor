@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
   signal,
 } from '@angular/core';
-import { AngularNodeViewComponent } from 'ngx-tiptap';
+import { AngularNodeViewComponent } from '../../node-view';
 
 @Component({
   selector: 'association-item-component',
