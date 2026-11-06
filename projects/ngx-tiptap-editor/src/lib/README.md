@@ -31,6 +31,7 @@ Primary library layer for `ngx-tiptap-editor`, implementing the root standalone 
 - [Components](./components/README.md): Toolbar, dropdowns, and dialog components.
 - [Directives](./directives/README.md): Click-outside and bubble menu directives.
 - [Extensions](./extensions/README.md): Modular Tiptap extension implementations.
+- [NodeView Bridge](./node-view/README.md): Angular component renderer bridge for Tiptap node views.
 - [Services](./services/README.md): Floating menu and KaTeX state coordination services.
 - [Utils](./utils/README.md): Selection inspection and node query utilities.
 

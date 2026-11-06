@@ -6,7 +6,7 @@ Entry point package for the `ngx-tiptap-editor` Angular library, exposing the pu
 
 ## Interface
 
-- `[public-api.ts]`: Canonical public API surface re-exporting `NgxTiptapEditor`, `ExtensionFactory`, UI components, directives, and extension definitions.
+- `[public-api.ts]`: Canonical public API surface re-exporting `NgxTiptapEditor`, `ExtensionFactory`, UI components, directives, node view bridge (`AngularNodeViewComponent`, `AngularNodeViewRenderer`), and extension definitions.
 - [Core Library (lib)](./lib/README.md): Implementation package containing editor components, directives, extensions, and services.
 
 ## Invariants

@@ -14,6 +14,7 @@
 graph TD
   App["src/app (Demo Application)"] --> Lib["projects/ngx-tiptap-editor (Core Library)"]
   Lib --> Toolbar["components (Toolbar & Dropdowns)"]
+  Lib --> NodeView["node-view (Angular NodeView Bridge)"]
   Lib --> Ext["extensions (Tiptap Nodes & Marks)"]
   Ext --> Math["KaTeX & MathType (WASM/Katex)"]
   Ext --> Edu["Alternatives, AnswerBox, Association"]
