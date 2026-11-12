@@ -2,7 +2,7 @@
 
 > A powerful, feature-rich Tiptap-based Rich Text Editor for Angular 18+, specifically designed for educational and technical content.
 
-[![NPM Version](https://img.shields.io/npm/v/ngx-tiptap-editor?style=flat-square)](https://www.npmjs.com/package/ngx-tiptap-editor)
+[![NPM Version](https://img.shields.io/npm/v/ngx-exitus-tiptap-editor?style=flat-square)](https://www.npmjs.com/package/ngx-exitus-tiptap-editor)
 [![Angular Version](https://img.shields.io/badge/angular-%23DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
 [![Tiptap Version](https://img.shields.io/badge/tiptap-%2324292e.svg?style=flat-square&logo=tiptap&logoColor=white)](https://tiptap.dev/)
 
