@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { AngularNodeViewComponent } from '../../node-view';
+import { NodeInsertParagraphsComponent } from '../../components/node-insert-paragraphs.component';
 import { NodeSelection } from '@tiptap/pm/state';
 
 @Component({
@@ -40,33 +41,8 @@ import { NodeSelection } from '@tiptap/pm/state';
         }
       </div>
 
-      <!-- Insert Paragraph Before Button -->
-      <div
-        class="insert-paragraph-btn insert-paragraph-before"
-        title="Inserir parágrafo antes"
-        (click)="insertParagraph('before', $event)"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            fill="currentColor"
-            d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"
-          />
-        </svg>
-      </div>
-
-      <!-- Insert Paragraph After Button -->
-      <div
-        class="insert-paragraph-btn insert-paragraph-after"
-        title="Inserir parágrafo após"
-        (click)="insertParagraph('after', $event)"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            fill="currentColor"
-            d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"
-          />
-        </svg>
-      </div>
+      <!-- Insert Paragraph Buttons -->
+      <ex-node-insert-paragraphs [editor]="editor()" [getPos]="getPos()" [node]="node()" />
     </div>
   `,
   styles: [
@@ -80,7 +56,7 @@ import { NodeSelection } from '@tiptap/pm/state';
     `,
   ],
   standalone: true,
-  imports: [],
+  imports: [NodeInsertParagraphsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnswerBoxComponent extends AngularNodeViewComponent {
@@ -117,24 +93,5 @@ export class AnswerBoxComponent extends AngularNodeViewComponent {
     const tr = editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, pos));
     editor.view.dispatch(tr);
     editor.view.dom.focus();
-  }
-
-  insertParagraph(where: 'before' | 'after', event: MouseEvent) {
-    event.stopPropagation();
-    event.preventDefault();
-
-    const getPosFn = this.getPos();
-    if (typeof getPosFn !== 'function') return;
-
-    const pos = getPosFn();
-    if (pos === undefined) return;
-
-    const insertionPos = where === 'before' ? pos : pos + this.node().nodeSize;
-
-    this.editor()
-      .chain()
-      .insertContentAt(insertionPos, { type: 'paragraph' })
-      .focus(where === 'before' ? insertionPos : insertionPos + 1)
-      .run();
   }
 }

@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import { TableExtensions, fixTableEmptyParagraphs } from './index';
+import { TableExtensions, TableView, fixTableEmptyParagraphs } from './index';
 
 describe('TableExtensions', () => {
   let editor: Editor;
@@ -64,6 +64,48 @@ describe('TableExtensions', () => {
 
       expect(fixed).toContain('<td><p>Texto</p></td>');
       expect(fixed).not.toContain('<br>');
+    });
+  });
+
+  describe('TableView - insertParagraph', () => {
+    it('deve inserir parágrafo antes da tabela e posicionar o cursor', () => {
+      const tableNode = editor.state.doc.child(0);
+      const tableView = new TableView(tableNode, 25, editor.view, () => 0, editor);
+
+      tableView.insertParagraph('before');
+
+      // Primeiro nó agora é um parágrafo
+      expect(editor.state.doc.child(0).type.name).toBe('paragraph');
+      // Segundo nó é a tabela
+      expect(editor.state.doc.child(1).type.name).toBe('table');
+      // Cursor está dentro do parágrafo inserido
+      expect(editor.state.selection.from).toBe(1);
+    });
+
+    it('deve inserir parágrafo após a tabela e posicionar o cursor', () => {
+      const tableNode = editor.state.doc.child(0);
+      const tableSize = tableNode.nodeSize;
+      const tableView = new TableView(tableNode, 25, editor.view, () => 0, editor);
+
+      tableView.insertParagraph('after');
+
+      // Primeiro nó é a tabela
+      expect(editor.state.doc.child(0).type.name).toBe('table');
+      // Segundo nó agora é um parágrafo
+      expect(editor.state.doc.child(1).type.name).toBe('paragraph');
+      // Cursor está dentro do parágrafo inserido
+      expect(editor.state.selection.from).toBe(tableSize + 1);
+    });
+
+    it('deve resolver a posição da tabela mesmo se getPos não for função (fallback defensivo)', () => {
+      const tableNode = editor.state.doc.child(0);
+      // Simula caso onde getPos é passado como objeto de atributos pelo Tiptap padrão
+      const tableView = new TableView(tableNode, 25, editor.view, {} as any, editor);
+
+      tableView.insertParagraph('before');
+
+      expect(editor.state.doc.child(0).type.name).toBe('paragraph');
+      expect(editor.state.doc.child(1).type.name).toBe('table');
     });
   });
 });

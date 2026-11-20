@@ -6,21 +6,47 @@
   background-color: #ffc83d;
   color: white;
   border-radius: 50%;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  font: inherit;
+  appearance: none;
   display: none;
   z-index: 30;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   align-items: center;
   justify-content: center;
+  user-select: none;
+  line-height: 1;
+
+  // Extended hit area to prevent mouseleave flicker when moving towards the protruding button
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    left: -6px;
+    right: -6px;
+    border-radius: 50%;
+  }
 
   svg {
     width: 16px;
     height: 16px;
+    pointer-events: none;
   }
 
   &:hover {
     background-color: #3b82f6;
+  }
+
+  &:active {
+    transform: scale(0.92);
   }
 }
 

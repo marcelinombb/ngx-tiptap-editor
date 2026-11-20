@@ -220,9 +220,10 @@ export interface TableOptions {
   allowTableNodeSelection: boolean;
 }
 
+export { TableView } from './TableView';
+
 export const TableExtensions = [
   Table.extend<TableOptions>({
-    // @ts-expect-error - Our TableView constructor takes an extra editor param
     addOptions() {
       return {
         HTMLAttributes: {},
@@ -230,7 +231,6 @@ export const TableExtensions = [
         renderWrapper: false,
         handleWidth: 5,
         cellMinWidth: 25,
-        // TODO: fix
         View: TableView,
         lastColumnResizable: true,
         allowTableNodeSelection: false,
@@ -239,6 +239,11 @@ export const TableExtensions = [
     onCreate({ editor }) {
       const originalGetHTML = editor.getHTML.bind(editor);
       editor.getHTML = () => fixTableEmptyParagraphs(originalGetHTML());
+    },
+    addNodeView() {
+      return ({ node, view, getPos, editor }) => {
+        return new TableView(node, this.options.cellMinWidth, view, getPos, editor);
+      };
     },
     addAttributes() {
       return {

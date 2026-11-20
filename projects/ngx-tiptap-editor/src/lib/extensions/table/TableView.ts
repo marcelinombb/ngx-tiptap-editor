@@ -3,6 +3,7 @@ import type { NodeView, ViewMutationRecord, EditorView } from '@tiptap/pm/view';
 import { columnResizingPluginKey } from './custom-column-resizing';
 import { Editor } from '@tiptap/core';
 import { TableMap } from '@tiptap/pm/tables';
+import { insertAdjacentParagraph } from '../../utils/insert-paragraph-adjacent';
 
 export function getColStyleDeclaration(
   minWidth: number,
@@ -134,22 +135,22 @@ export class TableView implements NodeView {
 
   view: EditorView;
 
-  editor: Editor;
+  editor?: Editor;
 
-  getPos: () => number | undefined;
+  getPos: (() => number | undefined) | Record<string, any>;
 
   constructor(
     node: ProseMirrorNode,
     cellMinWidth: number,
     view: EditorView,
-    getPos: () => number | undefined,
-    editor: Editor,
+    getPosOrAttrs?: (() => number | undefined) | Record<string, any>,
+    editor?: Editor,
   ) {
     this.node = node;
     this.cellMinWidth = cellMinWidth;
     this.view = view;
-    this.editor = editor;
-    this.getPos = getPos;
+    this.getPos = getPosOrAttrs ?? (() => undefined);
+    this.editor = editor ?? (view as any).editor ?? ((view.dom as any)?.editor as Editor);
     this.dom = document.createElement('div');
     this.dom.className = 'tableWrapper tiptap-widget';
     this.table = this.dom.appendChild(document.createElement('table'));
@@ -174,27 +175,42 @@ export class TableView implements NodeView {
     }
 
     // Insert Paragraph Before button
-    const insertBeforeBtn = document.createElement('div');
+    const insertBeforeBtn = document.createElement('button');
+    insertBeforeBtn.type = 'button';
     insertBeforeBtn.classList.add('insert-paragraph-btn', 'insert-paragraph-before');
     insertBeforeBtn.innerHTML =
       '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"/></svg>';
     insertBeforeBtn.title = 'Inserir parágrafo antes';
-    insertBeforeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.insertParagraph('before');
-    });
-    this.dom.appendChild(insertBeforeBtn);
+    insertBeforeBtn.setAttribute('aria-label', 'Inserir parágrafo antes');
 
     // Insert Paragraph After button
-    const insertAfterBtn = document.createElement('div');
+    const insertAfterBtn = document.createElement('button');
+    insertAfterBtn.type = 'button';
     insertAfterBtn.classList.add('insert-paragraph-btn', 'insert-paragraph-after');
     insertAfterBtn.innerHTML =
       '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"/></svg>';
     insertAfterBtn.title = 'Inserir parágrafo após';
-    insertAfterBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.insertParagraph('after');
-    });
+    insertAfterBtn.setAttribute('aria-label', 'Inserir parágrafo após');
+
+    const bindButton = (btn: HTMLButtonElement, where: 'before' | 'after') => {
+      let lastTrigger = 0;
+      const trigger = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (now - lastTrigger < 300) return;
+        lastTrigger = now;
+        this.insertParagraph(where);
+      };
+
+      btn.addEventListener('mousedown', trigger);
+      btn.addEventListener('click', trigger);
+    };
+
+    bindButton(insertBeforeBtn, 'before');
+    bindButton(insertAfterBtn, 'after');
+
+    this.dom.appendChild(insertBeforeBtn);
     this.dom.appendChild(insertAfterBtn);
 
     this.colgroup = this.table.appendChild(document.createElement('colgroup'));
@@ -261,21 +277,59 @@ export class TableView implements NodeView {
     return false;
   }
 
-  insertParagraph(where: 'before' | 'after') {
-    if (typeof this.getPos !== 'function') return;
-    const pos = this.getPos();
-    if (pos === undefined) return;
+  resolvePos(): number | undefined {
+    if (typeof this.getPos === 'function') {
+      const pos = this.getPos();
+      if (typeof pos === 'number') {
+        return pos;
+      }
+    }
 
-    const insertionPos = where === 'before' ? pos : pos + this.node.nodeSize;
-    this.editor.commands.insertContentAt(insertionPos, {
-      type: 'paragraph',
-      content: [{ type: 'text', text: ' ' }],
+    // Fallback 1: Resolve position using view.posAtDOM
+    try {
+      const posAtDom = this.view.posAtDOM(this.dom, 0);
+      if (typeof posAtDom === 'number') {
+        const $pos = this.view.state.doc.resolve(posAtDom);
+        for (let d = $pos.depth; d >= 0; d--) {
+          if ($pos.node(d).type.name === 'table') {
+            return $pos.before(d);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // Fallback 2: Search for this table node in document state
+    let foundPos: number | undefined;
+    this.view.state.doc.descendants((child, pos) => {
+      if (child === this.node) {
+        foundPos = pos;
+        return false;
+      }
+      return true;
     });
 
-    if (where === 'before') {
-      this.editor.commands.focus(insertionPos);
-    } else {
-      this.editor.commands.focus(insertionPos + 1);
-    }
+    return foundPos;
+  }
+
+  insertParagraph(where: 'before' | 'after') {
+    const pos = this.resolvePos();
+    if (pos === undefined || pos === null) return;
+
+    const editor =
+      this.editor ?? (this.view as any).editor ?? ((this.view.dom as any)?.editor as Editor);
+
+    if (!editor) return;
+
+    // Use current table node in document state for accurate nodeSize
+    const currentTable = this.view.state.doc.nodeAt(pos) || this.node;
+
+    insertAdjacentParagraph({
+      editor,
+      pos,
+      nodeSize: currentTable.nodeSize,
+      where,
+    });
   }
 }

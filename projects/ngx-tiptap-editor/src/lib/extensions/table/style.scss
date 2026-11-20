@@ -87,10 +87,12 @@
   }
 
   .tableWrapper {
+    position: relative;
     display: table;
     margin: 0.9em auto;
 
     &.ex-selected .insert-paragraph-btn,
+    &:focus-within .insert-paragraph-btn,
     &:hover .insert-paragraph-btn {
       display: flex;
     }

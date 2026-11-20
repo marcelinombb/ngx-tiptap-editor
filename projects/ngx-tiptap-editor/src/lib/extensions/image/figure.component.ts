@@ -11,13 +11,14 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { AngularNodeViewComponent } from '../../node-view';
+import { NodeInsertParagraphsComponent } from '../../components/node-insert-paragraphs.component';
 import ImageCropper from './ImageCropper';
 import { CropRegion } from './image-cropper-math';
 
 @Component({
   selector: 'ex-figure',
   standalone: true,
-  imports: [],
+  imports: [NodeInsertParagraphsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -37,30 +38,7 @@ import { CropRegion } from './image-cropper-math';
       <div class="resize-handle resize-handle-br" (mousedown)="onMouseDown($event, 'br')"></div>
 
       <!-- Insert Paragraph Buttons -->
-      <div
-        class="insert-paragraph-btn insert-paragraph-before"
-        title="Inserir parágrafo antes"
-        (click)="insertParagraph($event, 'before')"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            fill="currentColor"
-            d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"
-          />
-        </svg>
-      </div>
-      <div
-        class="insert-paragraph-btn insert-paragraph-after"
-        title="Inserir parágrafo após"
-        (click)="insertParagraph($event, 'after')"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            fill="currentColor"
-            d="M11 9l1.42 1.42L8.83 14H18V7h2v9H8.83l3.59 3.58L11 21l-6-6 6-6z"
-          />
-        </svg>
-      </div>
+      <ex-node-insert-paragraphs [editor]="editor()" [getPos]="getPos()" [node]="node()" />
     </div>
   `,
   styles: [
@@ -202,23 +180,6 @@ export class FigureComponent extends AngularNodeViewComponent implements OnDestr
     if (tr.docChanged) {
       view.dispatch(tr);
     }
-  }
-
-  insertParagraph(event: Event, where: 'before' | 'after') {
-    event.stopPropagation();
-    const getPosFn = this.getPos();
-    if (typeof getPosFn !== 'function') return;
-
-    const pos = getPosFn();
-    if (pos === undefined) return;
-
-    const insertionPos = where === 'before' ? pos : pos + this.node().nodeSize;
-
-    this.editor()
-      .chain()
-      .insertContentAt(insertionPos, { type: 'paragraph' })
-      .focus(where === 'before' ? insertionPos : insertionPos + 1)
-      .run();
   }
 
   onFigureClick(event: Event) {

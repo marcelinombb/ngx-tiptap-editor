@@ -5,9 +5,11 @@
 export * from './lib/tiptap-editor';
 export * from './lib/components/editor-dropdown.component';
 export * from './lib/components/special-characters.component';
+export * from './lib/components/node-insert-paragraphs.component';
 export * from './lib/directives/click-outside.directive';
 export * from './lib/extension-factory';
 export * from './lib/utils/tiptap-selection';
+export * from './lib/utils/insert-paragraph-adjacent';
 
 // NodeView Bridge
 export {
